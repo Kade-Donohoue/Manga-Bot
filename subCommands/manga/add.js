@@ -21,10 +21,15 @@ module.exports = class mangaAddSubCommand extends BaseSubcommandExecutor {
         const URL = interaction.options.get('manga_url').value
         var mangaName =''
         var chapTitle = ''
+        interaction.deferReply();
         if (!URL.includes("http")) return
-        if (URL.includes('chapmang')) getManga(URL).then()
+        if (URL.includes('chapmang')) getManga.getMangaFull(URL).then(function(data) {
+            console.log(data)
+            setUpChaps(data[0],data[1],data[2],data[3],data[4])
+        })
         // if (URL.includes('asura')) asura()
         // if (URL.includes('reaperscan')) reaperMang()
+        
 
         function setUpChaps(chaps, name, currentTitle, nextTitle , latestTitle){
             // name = name.slice(99)
@@ -42,18 +47,19 @@ module.exports = class mangaAddSubCommand extends BaseSubcommandExecutor {
                 if (err) return console.error(err.message);
                 // console.log(row)
                 // console.log(!row)
+                const currentTime = new Date().toLocaleDateString("en-US", {year: "numeric", month: "numeric", day: "numeric", timeZone: "America/Los_Angeles", timeZoneName: "short", hour: "numeric", minute: "numeric", hour12: true })
                 if (!row) {
                     console.log("importing to Global List")
                     interaction.channel.send({content: 'Manga Added to Global List'})
-                    sql = `INSERT INTO mangaData (mangaName,list,newest,latestCard) VALUES(?,?,?,?)`
-                    data.run(sql,[name,chaps.toString(),chaps[chaps.length-1],latestTitle],(err)=>{
+                    sql = `INSERT INTO mangaData (mangaName,list,newest,latestCard,updateTime) VALUES(?,?,?,?,?)`
+                    data.run(sql,[name,chaps.toString(),chaps[chaps.length-1],latestTitle,currentTime],(err)=>{
                         if (err) return console.error(err.message);
                     })
                 } else {
                     console.log('updating Global List')
                     interaction.channel.send({content: 'Manga Already Added to Global List'})
-                    sql = `Update mangaData SET newest = ?, list = ?, latestCard = ? WHERE mangaName = ?`;
-                    data.run(sql,[chaps[chaps.length-1],chaps.toString(),name,latestTitle],(err)=>{
+                    sql = `Update mangaData SET newest = ?, list = ?, latestCard = ?, updateTime = ? WHERE mangaName = ?`;
+                    data.run(sql,[chaps[chaps.length-1],chaps.toString(),name,currentTime,latestTitle],(err)=>{
                         if (err) return console.error(err.message);
                     })
                 }

@@ -8,7 +8,7 @@ const data = new sqlite3.Database('src/data/manga.db',sqlite3.OPEN_READWRITE,(er
 
 module.exports = class MangaSubCommand extends BaseSlashSubCommand {
     constructor() {
-        super('manga', [], ['latest', 'current', 'next', 'add', 'remove', 'allunread', 'card'])
+        super('manga', [], ['latest', 'current', 'next', 'remove', 'add', 'bulkadd', 'allunread', 'card'])
     }
 
     getCommandJson() {
@@ -51,11 +51,11 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
             .setName('remove')
             .setDescription('allows you to remove selected manga (WIP)')
             .addStringOption((option) => option 
-            .setName('your_title')
-            .setDescription('Title of Manga')
-            .setAutocomplete(true)
-            .setRequired(true)
-        )
+                .setName('your_title')
+                .setDescription('Title of Manga')
+                .setAutocomplete(true)
+                .setRequired(true)
+            )
         )
         .addSubcommand((subcommand) => subcommand 
             .setName('add')
@@ -83,11 +83,11 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
             .setName('card')
             .setDescription('Provides a card containing information of selected manga (WIP)')
             .addStringOption((option) => option 
-            .setName('title')
-            .setDescription('Title of Manga that you want to see the card of')
-            .setAutocomplete(true)
-            .setRequired(true)
-        )
+                .setName('title')
+                .setDescription('Title of Manga that you want to see the card of')
+                .setAutocomplete(true)
+                .setRequired(true)
+            )
         )
         .toJSON()
     }

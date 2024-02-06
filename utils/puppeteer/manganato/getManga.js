@@ -48,6 +48,15 @@ async function getMangaFull(url) {
             a => a.getAttribute('data-c')
         ))
 
+        var chapTitles = await page.$eval('body > div.body-site > div:nth-child(1) > div.panel-navigation > select', node => node.value)
+        chapTitles = chapTitles.split(':')
+        currentTitle = chapTitles[0]
+
+        const nextButton = await page.waitForSelector('body > div.body-site > div:nth-child(1) > div.panel-navigation > div > a.navi-change-chapter-btn-next.a-h')
+        var chapNext = await nextButton.evaluate(el => el.getAttribute('href'))
+        chapNext = chapNext.split('/')
+        chapNext = (chapNext[chapNext.length-1].replace("-", " "))
+
         let urlArgs = url.split("/")
         urlArgs.pop()
         let mangaURL = urlArgs.join("/")
@@ -67,7 +76,14 @@ async function getMangaFull(url) {
         
         await browser.close()
         getIcon.getMangaIcon(mangaURL, mangaName)
-        return [chapterList, mangaName]
+
+        console.log(chapterList)
+        var tmp = chapterList.slice(-1)
+        tmp = tmp[0].split('/').slice(-1)[0]
+        console.log(tmp)
+        latestChapter = tmp.replace("-", " ")
+
+        return [chapterList, mangaName, currentTitle, chapNext, latestChapter]
         
     } catch {
         return -1

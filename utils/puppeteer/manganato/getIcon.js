@@ -18,6 +18,7 @@ async function getMangaIcon(url, title) {
     const browser = await puppeteer.launch({headless: false, devtools: false, ignoreHTTPSErrors: true, 
         args: ['--enable-features=NetworkService', '--no-sandbox', '--disable-setuid-sandbox','--mute-audio']})
     try {
+        console.log("starting Icon Save")
         const page = await browser.newPage()
         page.setDefaultNavigationTimeout(15000)
         page.setRequestInterception(true)
@@ -43,17 +44,20 @@ async function getMangaIcon(url, title) {
         })
         const photo = await photoPage.evaluate(el => el.src)
         const icon = await page.goto(photo)
-        fs.writeFile("src\data\icons"+title.replace(/[^a-zA-Z]+/g, "")+".png", await icon.buffer(), (err) => {
+        fs.writeFile("./src/data/icons/"+title.replace(/[^a-zA-Z]+/g, "")+".png", await icon.buffer(), function(err) {
             if (err) {
+                console.log("ICON SAVING FAIL ON SAVE!!!!!!!!!!!!!")
                 return -1
             }
         })
-
+        console.log(icon.buffer())
         await browser.close()
+        console.log("Icon Save Success at " + "./src/data/icons/"+title.replace(/[^a-zA-Z]+/g, "")+".png")
         return 1
         
     } catch {
         await browser.close()
+        console.log("ICON SAVING FAIL!!!!!!!!!!!!!")
         return -1
     }
 }

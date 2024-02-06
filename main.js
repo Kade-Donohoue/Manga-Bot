@@ -12,7 +12,7 @@ const data = new sqlite3.Database('src/data/manga.db',sqlite3.OPEN_READWRITE,(er
 sql = `CREATE TABLE IF NOT EXISTS userData (userID,mangaName,current,currentCard,nextCard)`
 data.run(sql)
 
-sql = `CREATE TABLE IF NOT EXISTS mangaData (mangaName,list,newest,latestCard)`
+sql = `CREATE TABLE IF NOT EXISTS mangaData (mangaName,list,newest,latestCard,updateTime)`
 data.run(sql)
 
 const token = require('../token.json')
@@ -27,7 +27,7 @@ const getAll = require("./utils/puppeteer/manganato/getManga")
 console.log("TEST ")
 // chapList.getChapterList("https://chapmanganato.com/manga-on992096/chapter-11.6").then(result => console.log(result))
 // getIcon.getMangaIcon("https://chapmanganato.com/manga-on992096/", "Souzou Renkinjutsushi Wa Jiyuu Wo Ouka Suru: Kokyou Wo Tsuihou Saretara, Maou No Ohizamoto De Chouzetsu Kouka No Magic Item Tsukuri-Houdai Ni Narimashita").then((result) => (console.log(result)))
-getAll.getMangaFull("https://chapmanganato.com/manga-np990472/chapter-28.1").then((results) => console.log(results))
+// getAll.getMangaFull("https://chapmanganato.com/manga-np990472/chapter-28.1").then((results) => console.log(results))
 
 // setInterval(refreshAll, 7200000) // Check all Manga Every 2 hours
 
@@ -49,8 +49,10 @@ client.on('interactionCreate', (interaction) => {
                 const subcommandInstance = client.slashSubcommands.get(commandName)
                 subcommandInstance.groupCommands.get(subcommandGroup).get(subcommandName).run(client, interaction)
             } else {
+                console.log(commandName)
                 const subcommandInstance = client.slashSubcommands.get(commandName)
-                // console.log(subcommandInstance.groupCommands)
+                console.log(subcommandName)
+                console.log(subcommandInstance.groupCommands)
                 subcommandInstance.groupCommands.get(subcommandName).run(client, interaction)
             }
             return
