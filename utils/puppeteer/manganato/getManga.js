@@ -52,10 +52,18 @@ async function getMangaFull(url) {
         chapTitles = chapTitles.split(':')
         currentTitle = chapTitles[0]
 
-        const nextButton = await page.waitForSelector('body > div.body-site > div:nth-child(1) > div.panel-navigation > div > a.navi-change-chapter-btn-next.a-h')
-        var chapNext = await nextButton.evaluate(el => el.getAttribute('href'))
-        chapNext = chapNext.split('/')
-        chapNext = (chapNext[chapNext.length-1].replace("-", " "))
+        try {
+            const nextButton = await page.waitForSelector('body > div.body-site > div:nth-child(1) > div.panel-navigation > div > a.navi-change-chapter-btn-next.a-h', 
+            {
+                waitUntil: 'load',
+                timeout: 10
+            })
+            var chapNext = await nextButton.evaluate(el => el.getAttribute('href'))
+            chapNext = chapNext.split('/')
+            chapNext = (chapNext[chapNext.length-1].replace("-", " "))
+        } catch {
+            chapNext = ""
+        }
 
         let urlArgs = url.split("/")
         urlArgs.pop()

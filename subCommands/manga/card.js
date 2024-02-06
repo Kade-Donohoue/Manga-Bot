@@ -25,9 +25,8 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
             sql = `SELECT * FROM mangaData WHERE mangaName = ?`
             data.get(sql,[name], (err, mangaRow)=> {
                 const latest = mangaRow.latestCard
-                console.log(userRow)
+                const updateTime = mangaRow.updateTime
                 var current = ''
-                console.log(userRow != undefined)
                 if (userRow != undefined) {
                     current = userRow.currentCard
                 } else {
@@ -43,12 +42,12 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
                 var next = userRow.nextCard
                 // if (next == "") next = chaps[0]
                 console.log(next)
-                generateCard(name.toString(), latest, current, next, (chaps.length + 1).toString() + " Chapters")
+                generateCard(name.toString(), latest, current, next, (chaps.length + 1).toString() + " Chapters", updateTime)
             })
         })
     
 
-        async function generateCard(name, latest, current, next, total) {
+        async function generateCard(name, latest, current, next, total, updateTime) {
 
             latest = latest.charAt(0).toUpperCase() + latest.slice(1)
             next = next.charAt(0).toUpperCase() + next.slice(1)
@@ -59,10 +58,6 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
 
             const template = await Canvas.loadImage('./src/data/template/cardTemplate.png')
             context.drawImage(template, 0, 0, canvas.width, canvas.height)
-
-            console.log('./src/data/icons/'+name.replace(/[^a-zA-Z]+/g, "")+'.png')
-            const banner = await Canvas.loadImage('./src/data/icons/'+name.replace(/[^a-zA-Z]+/g, "")+'.png')
-            context.drawImage(banner, 890, 240, 655, 940)
 
             context.font = applyText(canvas, name, 1400);
             context.fillStyle = '#D0D3D6';
@@ -79,21 +74,53 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
             context.font = applyText(canvas, total, 400);
             context.fillText(total, 410, 1130);
 
+            context.textAlign = "left"
+            context.font = applyText(canvas, updateTime, 600);
+            context.fillText(updateTime, 100, 1365);
+
+            const x = 890
+            const y = 230
+            const radius = 30
+            const width = 655
+            const height = 950
+
+            // context.strokeStyle = "red";
+            context.beginPath()
+            context.moveTo(x + radius, y)
+            context.lineTo(x + width - radius, y)
+            context.quadraticCurveTo(x + width, y, x + width, y + radius)
+            context.lineTo(x + width, y + height - radius)
+            context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height)
+            context.lineTo(x + radius, y + height)
+            context.quadraticCurveTo(x, y + height, x, y + height - radius)
+            context.lineTo(x, y + radius)
+            context.quadraticCurveTo(x, y, x + radius, y)
+            context.closePath()
+            context.clip()
+            
+
+            console.log('./src/data/icons/'+name.replace(/[^a-zA-Z]+/g, "")+'.png')
+            const banner = await Canvas.loadImage('./src/data/icons/'+name.replace(/[^a-zA-Z]+/g, "")+'.png')
+            context.drawImage(banner, x, y, width, height)
+
+            context.restore()
+
             const attachment = new AttachmentBuilder(await canvas.toBuffer('image/png'), { name: `${name}-card.png`})
-            console.log(attachment)
+            // console.log(attachment)
             interaction.reply({ files: [attachment] })
         }
 
-        const applyText = (canvas, randomThing, width) => {
+        // automatically find propper font size to get text to fit within certain width
+        const applyText = (canvas, text, width) => {
             const ctx = canvas.getContext('2d')
-            console.log(ctx)
+            // console.log(ctx)
         
             let fontSize = 150;
         
             do {
                 ctx.font = `${fontSize -= 10}px Hypereality`;
-            } while (ctx.measureText(randomThing).width > width)
-            console.log(ctx.measureText(randomThing))
+            } while (ctx.measureText(text).width > width)
+            console.log(ctx.measureText(text))
             return ctx.font;
         }
     }

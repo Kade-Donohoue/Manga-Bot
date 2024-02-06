@@ -42,7 +42,7 @@ module.exports = class mangaAllunreadSubCommand extends BaseSubcommandExecutor {
                             console.log(chaps[i+1])
                             console.log('NEW')
                             names.push(chaps[i+1])
-                            interaction.channel.send(chaps[i+1])
+                            interaction.user.send(chaps[i+1])
                             // console.log(rows[rows.length-1].mangaName)
                             // console.log(list.mangaName)
                             // if (rows[rows.length-1].mangaName == list.mangaName) {
@@ -62,7 +62,7 @@ module.exports = class mangaAllunreadSubCommand extends BaseSubcommandExecutor {
             })
             // console.log(names)
             // if (names.length>0) interaction.reply({content: names.join('\n').toString()})
-            interaction.reply({content: '(VERY WIP)!'})
+            interaction.reply({content: '(VERY WIP)!',ephemeral: true })
             
         })
         // interaction.reply({content: 'Manga Next'})
