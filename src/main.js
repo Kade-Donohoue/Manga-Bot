@@ -1,5 +1,6 @@
 const {REST} = require('@discordjs/rest')
 const {AttachmentBuilder, Client, GatewayIntentBits, Routes, Collection, InteractionType} = require('discord.js')
+const Fuse = require("fuse.js")
 const {registerCommands, registerSubCommands} = require('./utils/registry')
 const { refreshAll }  = require('./utils/updateManga')
 const sqlite3 = require("sqlite3").verbose()
@@ -7,6 +8,18 @@ let sql
 const data = new sqlite3.Database('src/data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
     if (err) return console.error(err.message);
 })
+
+const fuseOptions = {
+    isCaseSensitive: false,
+	includeScore: false,
+	shouldSort: true,
+	includeMatches: false,
+	findAllMatches: true,
+	// minMatchCharLength: 1,
+	threshold: 0.4,
+	ignoreLocation: true,
+}
+
 
 //Create Databases if not exist
 sql = `CREATE TABLE IF NOT EXISTS userData (userID,mangaName,current,currentCard,nextCard)`
@@ -89,36 +102,28 @@ client.on('interactionCreate', (interaction) => {
 // Update Manga for Autofill results
 async function mangaListUpdate(interaction, client) {
     const focusedValue = interaction.options.getFocused(true)
-    console.log(focusedValue)
+    // console.log(focusedValue)
+    var search = focusedValue.value
+    if (!search) search = " "
     if (focusedValue.name === 'your_title') {
         console.log('USER')
         sql = `SELECT mangaName FROM userData WHERE userID = ?`
         await data.all(sql,[interaction.member.id], (err, rows)=> {
             const names = rows.map(row => row.mangaName)
-            var choices = []
-            console.log(names)
-            // choices = names
-            if (names.length > 25) {
-                choices = names.slice(0,25)
-            } else {
-                choices = names
-            }
-            console.log(choices)
-            const filtered = choices.filter(choice => choice.startsWith(focusedValue.value))
-            console.log(filtered)
-            interaction.respond(filtered.map((choice) => ({ name: choice, value: choice})))
+            const fuse = new Fuse(names, fuseOptions)
+            fuseRes = fuse.search(search).slice(0,25)
+            
+            interaction.respond(fuseRes.map((choice) => ({ name: choice.item, value: choice.item})))
         })
     } else {
         sql = `SELECT mangaName FROM mangaData`
         await data.all(sql,[], (err, rows)=> {
             if (err) return console.error(err.message);
-            // console.log(rows)
             const names = rows.map(row => row.mangaName)
-            const choices = names
-            console.log(choices)
-            const filtered = choices.filter(choice => choice.startsWith(focusedValue.value))
-            console.log(filtered)
-            interaction.respond(filtered.slice(0, 25).map((choice) => ({ name: choice, value: choice})))
+            const fuse = new Fuse(names, fuseOptions)
+            fuseRes = fuse.search(search).slice(0,25)
+
+            interaction.respond(fuseRes.map((choice) => ({ name: choice.item, value: choice.item})))
         })
         
         
