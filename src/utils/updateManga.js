@@ -13,7 +13,7 @@ const adblocker = AdblockerPlugin({
 puppeteer.use(adblocker)
 
 let sql;
-const data = new sqlite3.Database('src/data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
+const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
     if (err) return console.error(err.message);
 })
 
@@ -48,19 +48,19 @@ async function chapMang(currentURL) {
         waitUntil: 'load',
         timeout: 0
     })
-    console.log('WENT TO URL')
+    // console.log('WENT TO URL')
     await page.setViewport({width: 1920, height: 1080})
-    console.log('View Set')
+    // console.log('View Set')
 
     const titleSelect = await page.waitForSelector('body > div.body-site > div:nth-child(1) > div.panel-breadcrumb > a:nth-child(3)', 
     {
         waitUntil: 'load',
         timeout: 0
     })
-    console.log(titleSelect)
+    // console.log(titleSelect)
     var mangaName = await titleSelect.evaluate(el => el.innerText)
     if (mangaName.length > 50) mangaName = mangaName.toString().slice(0,49)+'...'
-    console.log(mangaName)
+    // console.log(mangaName)
 
     const chapDrop = await page.waitForSelector('body > div.body-site > div:nth-child(1) > div.panel-navigation > select', 
     {
@@ -106,69 +106,20 @@ async function chapMang(currentURL) {
     // page2.on('request', (request) => {
     //     request.continue()
     // })
-    console.log(photo)
+    // console.log(photo)
     var icon = await page2.goto(photo)
-    fs.writeFile("./src/data/icons/"+mangaName.replace(/[^a-zA-Z]+/g, "")+".png", await icon.buffer(), function (err) {
+    fs.writeFile("data/icons/"+mangaName.replace(/[^a-zA-Z]+/g, "")+".png", await icon.buffer(), function (err) {
         if (err) {
             return console.log(err);
         }
     })
 
     var chapLatest = chapsList[chapsList.length-1].split('/')
-    console.log(chapLatest[chapLatest.length-1].replace("-", " ").replace("c", "C"))
+    // console.log(chapLatest[chapLatest.length-1].replace("-", " ").replace("c", "C"))
 
     setUpChaps(chapsList, mangaName, chapLatest[chapLatest.length-1].replace("-", " ").replace("c", "C"))
     await browser.close()
 }
-
-
-// DISABLED DUE TO ASURA CONSTANTLY CHANGING ONCE ASURA IS STABLE WILL BE FIXXED
-
-// async function asura() {
-//     const browser = await puppeteer.launch({headless: false, 
-//         args: ['--enable-features=NetworkService', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'
-//     ]}) //change to true Once testing complete
-//     const page = await browser.newPage()
-
-//     // blockResourcesPlugin.blockedTypes.add('image')
-//     await page.goto(currentURL)
-
-//     await page.setViewport({width: 1080, height: 1024})
-
-//     // blockResourcesPlugin.blockedTypes.delete('image')
-
-//     const titleSelect = await page.waitForSelector('div.headpost > div > a')
-//     console.log(titleSelect)
-//     const mangaName = await titleSelect.evaluate(el => el.innerText)
-//     if (mangaName.length > 50) mangaName = mangaName.toString().slice(0,49)+'...'
-
-//     const chapDrop = await page.waitForSelector('#chapter > option')
-    
-//     const chaps = await chapDrop.evaluate(() => Array.from(
-//         document.querySelectorAll('#chapter > option'), 
-//         a => a.getAttribute('value')
-//       ))
-//     var chapsList = new Array()
-//     for (var i=0; i<chaps.length; i++) {
-//         chapsList.splice(0,0,chaps[i])
-//     }
-//     chapsList.pop()
-
-//     await page.click('div.headpost > div > a')
-//     const photoPage = await page.waitForSelector('div.thumbook > div.thumb > img')
-//     const photo = await photoPage.evaluate(el => el.src)
-
-
-//     await page.goto(photo)
-
-//     await page.screenshot({
-//         path: "./src/data/icons/"+mangaName.replace(/[^a-zA-Z]+/g, "")+".png",
-//         type:"png"
-//     })
-
-//     setUpChaps(chapsList, mangaName)
-//     await browser.close()
-// }
 
 async function setUpChaps(chaps, name, latestTitle) {
     sql = `SELECT * FROM mangaData WHERE mangaName = ?`;
@@ -177,13 +128,13 @@ async function setUpChaps(chaps, name, latestTitle) {
         // console.log(row)
         // console.log(!row)
         if (!row) {
-            console.log("importing to Global List")
+            // console.log("importing to Global List")
             sql = `INSERT INTO mangaData (mangaName,list,newest,latestCard) VALUES(?,?,?,?)`
             data.run(sql,[name,chaps.toString(),chaps[chaps.length-1],latestTitle],(err)=>{
                 if (err) return console.error(err.message);
             })
         } else {
-            console.log('updating Global List')
+            // console.log('updating Global List')
             sql = `Update mangaData SET newest = ?, list = ?, latestCard=? WHERE mangaName = ?`;
             data.run(sql,[chaps[chaps.length-1],chaps.toString(),name,latestTitle],(err)=>{
                 if (err) return console.error(err.message);
@@ -199,7 +150,7 @@ function refreshSelect(mangaName) {
         if (!row) return
 
         currentURL = row.newest
-        console.log(currentURL)
+        // console.log(currentURL)
 
         if (!currentURL.includes("http")) return
         if (currentURL.includes('chapmang')) chapMang(currentURL)
@@ -214,14 +165,14 @@ function refreshAll() {
         if (err) return console.error(err.message)
         if (!rows) return
 
-        console.log(rows)
+        // console.log(rows)
         const names = rows.map(row => row.mangaName)
-        console.log(names)
+        // console.log(names)
         for (let i=0; i<names.length; i++) {
             
             setTimeout(() => {
                 refreshSelect(names[i])
-                console.log(names[i])
+                // console.log(names[i])
             }, 4000 * i)
             
         }

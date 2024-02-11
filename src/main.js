@@ -1,13 +1,20 @@
 const {REST} = require('@discordjs/rest')
-const {AttachmentBuilder, Client, GatewayIntentBits, Routes, Collection, InteractionType} = require('discord.js')
+const {AttachmentBuilder, Client, GatewayIntentBits, Routes, Collection, InteractionType, ComponentType} = require('discord.js')
+const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]})
+const token = require('../token.json')
+const rest = new REST({ version: '10' }).setToken(token.code)
+console.log("Discord.JS v" + require('discord.js').version)
+
+const fs = require('fs')
 const Fuse = require("fuse.js")
-const {registerCommands, registerSubCommands} = require('./utils/registry')
-const { refreshAll }  = require('./utils/updateManga')
 const sqlite3 = require("sqlite3").verbose()
-let sql
-const data = new sqlite3.Database('src/data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
-    if (err) return console.error(err.message);
-})
+
+
+const chapList = require("./utils/puppeteer/manganato/getChapList")
+const getIcon = require("./utils/puppeteer/manganato/getIcon")
+const getAll = require("./utils/puppeteer/manganato/getManga")
+const { refreshAll }  = require('./utils/updateManga')
+const {registerCommands, registerSubCommands} = require('./utils/registry')
 
 const fuseOptions = {
     isCaseSensitive: false,
@@ -21,26 +28,16 @@ const fuseOptions = {
 }
 
 
+let sql
+const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
+    if (err) return console.error(err.message);
+})
 //Create Databases if not exist
 sql = `CREATE TABLE IF NOT EXISTS userData (userID,mangaName,current,currentCard,nextCard)`
 data.run(sql)
 
 sql = `CREATE TABLE IF NOT EXISTS mangaData (mangaName,list,newest,latestCard,updateTime)`
 data.run(sql)
-
-const token = require('../token.json')
-const fs = require('fs')
-
-const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]})
-const rest = new REST({ version: '10' }).setToken(token.code)
-
-const chapList = require("./utils/puppeteer/manganato/getChapList")
-const getIcon = require("./utils/puppeteer/manganato/getIcon")
-const getAll = require("./utils/puppeteer/manganato/getManga")
-console.log("TEST ")
-// chapList.getChapterList("https://chapmanganato.com/manga-on992096/chapter-11.6").then(result => console.log(result))
-// getIcon.getMangaIcon("https://chapmanganato.com/manga-on992096/", "Souzou Renkinjutsushi Wa Jiyuu Wo Ouka Suru: Kokyou Wo Tsuihou Saretara, Maou No Ohizamoto De Chouzetsu Kouka No Magic Item Tsukuri-Houdai Ni Narimashita").then((result) => (console.log(result)))
-// getAll.getMangaFull("https://chapmanganato.com/manga-np990472/chapter-28.1").then((results) => console.log(results))
 
 // setInterval(refreshAll, 7200000) // Check all Manga Every 2 hours
 
@@ -50,6 +47,8 @@ client.on('ready', () => {
 })
 
 client.on('interactionCreate', (interaction) => {
+    if (interaction.componentType === ComponentType.Button) return
+    if (interaction.componentType === ComponentType.StringSelect) return
     if (interaction.isChatInputCommand()) {
         const {commandName} = interaction
         const cmd = client.slashCommands.get(commandName)
@@ -62,10 +61,7 @@ client.on('interactionCreate', (interaction) => {
                 const subcommandInstance = client.slashSubcommands.get(commandName)
                 subcommandInstance.groupCommands.get(subcommandGroup).get(subcommandName).run(client, interaction)
             } else {
-                console.log(commandName)
                 const subcommandInstance = client.slashSubcommands.get(commandName)
-                console.log(subcommandName)
-                console.log(subcommandInstance.groupCommands)
                 subcommandInstance.groupCommands.get(subcommandName).run(client, interaction)
             }
             return
@@ -78,7 +74,6 @@ client.on('interactionCreate', (interaction) => {
         const {commandName} = interaction
         const cmd = interaction.commandName
         const subcommandName = interaction.options.getSubcommand(false)
-        // console.log(subcommandName)
         if (!cmd) return
         
         try {
@@ -102,11 +97,9 @@ client.on('interactionCreate', (interaction) => {
 // Update Manga for Autofill results
 async function mangaListUpdate(interaction, client) {
     const focusedValue = interaction.options.getFocused(true)
-    // console.log(focusedValue)
     var search = focusedValue.value
     if (!search) search = " "
     if (focusedValue.name === 'your_title') {
-        console.log('USER')
         sql = `SELECT mangaName FROM userData WHERE userID = ?`
         await data.all(sql,[interaction.member.id], (err, rows)=> {
             const names = rows.map(row => row.mangaName)
@@ -145,7 +138,7 @@ async function main() {
         const slashCommandsJson = client.slashCommands.map((cmd) => cmd.getCommandJson())
         const slashSubCommandsJson = client.slashSubcommands.map((cmd) => cmd.getCommandJson())
         console.log('Refreshing slash Commands')
-        console.log(slashCommandsJson+slashSubCommandsJson)
+        // console.log(slashCommandsJson+slashSubCommandsJson)
         await rest.put(Routes.applicationGuildCommands(token.appID, token.guildID), {
             body: [...slashCommandsJson, ...slashSubCommandsJson],
         })

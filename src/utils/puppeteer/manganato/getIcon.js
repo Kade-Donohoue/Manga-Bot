@@ -44,7 +44,7 @@ async function getMangaIcon(url, title) {
         })
         const photo = await photoPage.evaluate(el => el.src)
         const icon = await page.goto(photo)
-        fs.writeFile("./src/data/icons/"+title.replace(/[^a-zA-Z]+/g, "")+".png", await icon.buffer(), function(err) {
+        fs.writeFile("data/icons/"+title.replace(/[^a-zA-Z]+/g, "")+".png", await icon.buffer(), function(err) {
             if (err) {
                 console.log("ICON SAVING FAIL ON SAVE!!!!!!!!!!!!!")
                 return -1
@@ -52,7 +52,7 @@ async function getMangaIcon(url, title) {
         })
         // console.log(icon.buffer())
         await browser.close()
-        console.log("Icon Save Success at " + "./src/data/icons/"+title.replace(/[^a-zA-Z]+/g, "")+".png")
+        console.log("Icon Save Success at " + "data/icons/"+title.replace(/[^a-zA-Z]+/g, "")+".png")
         return 1
         
     } catch {

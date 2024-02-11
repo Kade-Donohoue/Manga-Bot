@@ -9,6 +9,13 @@ const adblocker = AdblockerPlugin({
 })
 puppeteer.use(adblocker)
 
+const sqlite3 = require("sqlite3").verbose()
+let sql;
+const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
+    if (err) return console.error(err.message);
+})
+
+
 /**
  * Gets the chapter list from ChapManganato
  * @param url: Chapter URL of a manga from ChapManganato. 
@@ -85,10 +92,9 @@ async function getMangaFull(url) {
         await browser.close()
         getIcon.getMangaIcon(mangaURL, mangaName)
 
-        console.log(chapterList)
+        // console.log(chapterList)
         var tmp = chapterList.slice(-1)
         tmp = tmp[0].split('/').slice(-1)[0]
-        console.log(tmp)
         latestChapter = tmp.replace("-", " ")
 
         return [chapterList, mangaName, currentTitle, chapNext, latestChapter]
@@ -98,6 +104,61 @@ async function getMangaFull(url) {
     }
 }
 
+function setUpChaps(chaps, name, currentTitle, nextTitle , latestTitle, authID, URL){
+    if (nextTitle == "") nextTitle = ""
+    // console.log("name : ")
+    // console.log(name)
+    // console.log("chaps : ")
+    // console.log(chaps)
+    // console.log("latest : ")
+    // console.log(chaps[chaps.length-1])
+
+    //add Manga
+    sql = `SELECT * FROM mangaData WHERE mangaName = ?`;
+    data.get(sql,[name], (err, row)=> {
+        if (err) return console.error(err.message);
+        const currentTime = new Date().toLocaleDateString("en-US", {year: "numeric", month: "numeric", day: "numeric", timeZone: "America/Los_Angeles", timeZoneName: "short", hour: "numeric", minute: "numeric", hour12: true })
+        if (!row) {
+            // console.log("importing to Global List")
+            // interaction.channel.send({content: 'Manga Added to Global List',ephemeral: true})
+            sql = `INSERT INTO mangaData (mangaName,list,newest,latestCard,updateTime) VALUES(?,?,?,?,?)`
+            data.run(sql,[name,chaps.toString(),chaps[chaps.length-1],latestTitle,currentTime],(err)=>{
+                if (err) return console.error(err.message);
+            })
+        } else {
+            // console.log('updating Global List')
+            // interaction.channel.send({content: 'Manga Already Added to Global List',ephemeral: true})
+            sql = `Update mangaData SET newest = ?, list = ?, latestCard = ?, updateTime = ? WHERE mangaName = ?`;
+            data.run(sql,[chaps[chaps.length-1],chaps.toString(),latestTitle,currentTime,name],(err)=>{
+                if (err) return console.error(err.message);
+            })
+        }
+    })
+
+    //add User Manga
+    sql = `SELECT * FROM userData WHERE userID = ? AND mangaName = ?`;
+    data.get(sql,[authID, name], (err, row)=> {
+        if (err) return console.error(err.message);
+        if (!row) {
+            // console.log("Importing to User List")
+            // interaction.followUp({content: 'Manga Added To Your List',ephemeral: true})
+            sql = `INSERT INTO userData (current, userID, mangaName, currentCard, nextCard) VALUES(?,?,?,?,?)`
+            data.run(sql,[URL,authID,name,currentTitle,nextTitle],(err)=>{
+                if (err) return console.error(err.message);
+            })
+        } else {
+            // console.log('updating User List')
+            // interaction.followUp({content: 'Manga Already On Your List',ephemeral: true})
+            sql = `UPDATE userData SET current = ?, currentCard = ?, nextCard = ? WHERE userID = ? AND mangaName = ?`
+            data.run(sql,[URL,currentTitle,nextTitle,authID,name],(err)=>{
+                if (err) return console.error(err.message);
+            })
+        }
+    })
+}
+
+
 module.exports = {
-    getMangaFull
+    getMangaFull,
+    setUpChaps
 }

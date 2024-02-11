@@ -2,13 +2,13 @@ const { SlashCommandBuilder } = require('discord.js');
 const BaseSlashSubCommand = require("../../utils/BaseSlashSubCommand");
 const sqlite3 = require("sqlite3").verbose();
 let sql;
-const data = new sqlite3.Database('src/data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
+const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
     if (err) return console.error(err.message);
 })
 
 module.exports = class MangaSubCommand extends BaseSlashSubCommand {
     constructor() {
-        super('manga', [], ['latest', 'current', 'next', 'remove', 'add', 'bulkadd', 'allunread', 'card'])
+        super('manga', [], ['latest', 'current', 'next', 'remove', 'add', 'bulkadd', 'allunread', 'card', 'feed'])
     }
 
     getCommandJson() {
@@ -77,7 +77,7 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
         )
         .addSubcommand((subcommand) => subcommand 
             .setName('allunread')
-            .setDescription('allows you to add selected manga to your list (WIP)')
+            .setDescription('Sends list of unread manga to users DM')
         )
         .addSubcommand((subcommand) => subcommand 
             .setName('card')
@@ -88,6 +88,10 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
                 .setAutocomplete(true)
                 .setRequired(true)
             )
+        )
+        .addSubcommand((subcommand) => subcommand 
+            .setName('feed')
+            .setDescription('Provides cards of all unread manga one at a time')
         )
         .toJSON()
     }

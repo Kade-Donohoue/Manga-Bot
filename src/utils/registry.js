@@ -14,7 +14,7 @@ async function registerCommands(client, dir = '') {
       const Command = require(path.join(filePath, file))
       const cmd = new Command()
       client.slashCommands.set(cmd.name, cmd)
-      console.log(`Registering ${cmd.name}`)
+      // console.log(`Registering ${cmd.name}`)
     }
   }
 }

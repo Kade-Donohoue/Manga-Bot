@@ -5,7 +5,7 @@ const Canvas = require('canvas')
 const fs = require('fs');
 let sql;
 const { refreshSelect }  = require('../../utils/updateManga')
-const data = new sqlite3.Database('src/data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
+const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
     if (err) return console.error(err.message);
 })
 
@@ -17,7 +17,6 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
     run(client, interaction) {
         const authID = interaction.member.id
         const name = interaction.options.get('title').value
-        console.log(name)
         // refreshSelect(name)
 
         sql = `SELECT * FROM userData WHERE userID = ? AND mangaName = ?`
@@ -26,22 +25,18 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
             data.get(sql,[name], (err, mangaRow)=> {
                 const latest = mangaRow.latestCard
                 const updateTime = mangaRow.updateTime
+                const chaps = mangaRow.list.split(",")
                 var current = ''
+                var next = ''
                 if (userRow != undefined) {
                     current = userRow.currentCard
+                    next = userRow.nextCard
                 } else {
                     current = 'Not Reading'
+                    next = chaps[0]
+
                 }
-                console.log(current)
 
-                const chaps = mangaRow.list.split(",")
-                // console.log(latest)
-                // console.log(chaps)
-                // console.log(current)
-
-                var next = userRow.nextCard
-                // if (next == "") next = chaps[0]
-                console.log(next)
                 generateCard(name.toString(), latest, current, next, (chaps.length + 1).toString() + " Chapters", updateTime)
             })
         })
@@ -52,11 +47,10 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
             latest = latest.charAt(0).toUpperCase() + latest.slice(1)
             next = next.charAt(0).toUpperCase() + next.slice(1)
 
-            // console.log(name)
             const canvas = Canvas.createCanvas(1643, 1425)
             const context = canvas.getContext('2d')
 
-            const template = await Canvas.loadImage('./src/data/template/cardTemplate.png')
+            const template = await Canvas.loadImage('data/template/cardTemplate.png')
             context.drawImage(template, 0, 0, canvas.width, canvas.height)
 
             context.font = applyText(canvas, name, 1400);
@@ -99,15 +93,15 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
             context.clip()
             
 
-            console.log('./src/data/icons/'+name.replace(/[^a-zA-Z]+/g, "")+'.png')
-            const banner = await Canvas.loadImage('./src/data/icons/'+name.replace(/[^a-zA-Z]+/g, "")+'.png')
+            // console.log('`data/icons/'+name.replace(/[^a-zA-Z]+/g, "")+'.png')
+            const banner = await Canvas.loadImage('data/icons/'+name.replace(/[^a-zA-Z]+/g, "")+'.png')
             context.drawImage(banner, x, y, width, height)
 
             context.restore()
 
             const attachment = new AttachmentBuilder(await canvas.toBuffer('image/png'), { name: `${name}-card.png`})
             // console.log(attachment)
-            interaction.reply({ files: [attachment] })
+            interaction.reply({ files: [attachment], ephemeral: true })
         }
 
         // automatically find propper font size to get text to fit within certain width
@@ -120,7 +114,7 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
             do {
                 ctx.font = `${fontSize -= 10}px Hypereality`;
             } while (ctx.measureText(text).width > width)
-            console.log(ctx.measureText(text))
+            // console.log(ctx.measureText(text))
             return ctx.font;
         }
     }
