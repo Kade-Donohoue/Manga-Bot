@@ -25,6 +25,7 @@ module.exports = class mangaAddSubCommand extends BaseSubcommandExecutor {
         if (URL.includes('chapmang')) getManga.getMangaFull(URL).then(function(data) {
             // console.log(data)
             if (data != -1) getManga.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL)
+            interaction.editReply({content: "Added to your list"})
         })
         // if (URL.includes('asura')) asura()
         // if (URL.includes('reaperscan')) reaperMang()

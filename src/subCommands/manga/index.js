@@ -8,7 +8,7 @@ const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>
 
 module.exports = class MangaSubCommand extends BaseSlashSubCommand {
     constructor() {
-        super('manga', [], ['latest', 'current', 'next', 'remove', 'add', 'bulkadd', 'allunread', 'card', 'feed'])
+        super('manga', [], ['latest', 'current', 'next', 'remove', 'add', 'bulkadd', 'allunread', 'card', 'feed', 'forgetme'])
     }
 
     getCommandJson() {
@@ -92,6 +92,10 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
         .addSubcommand((subcommand) => subcommand 
             .setName('feed')
             .setDescription('Provides cards of all unread manga one at a time')
+        )
+        .addSubcommand((subcommand) => subcommand 
+            .setName('forgetme')
+            .setDescription('Removes any data that tracks what you have read')
         )
         .toJSON()
     }

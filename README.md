@@ -17,6 +17,16 @@ Discord bot that uses pupeteer to scrape webpages
 
 # **Change Logs**
 
+## Change Log v0.1.5
+ 
+- Fixxed bug where nothing would appear when you got to end of feed
+- updates setupchaps to have next chap be latest if you are on the latest chapter
+- added reply for when bot added manga using add command
+- switched from using addOption to setOption in mark as read list for feed command resolving a crash
+- removed debug logs in feed command
+- Fixxed get unread function to last unread
+- Added forgetme command that removes data that tracks the users data
+
 ## Change Log v0.1.4
 
 - moved data folder from src to the base directory

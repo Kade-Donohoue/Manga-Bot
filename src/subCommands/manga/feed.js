@@ -94,7 +94,7 @@ function manageCard(names, nexts, nextChaps, currentChaps, currentIndex, interac
             const row = new ActionRowBuilder()
                 .addComponents(cancelButton, linkButton, readButton, nextButton)
             const attach = new AttachmentBuilder(data, { name: `${name}-card.png`})
-            console.log(data)
+            // console.log(data)
             response = await interaction.channel.send({ files: [attach], components: [row], ephemeral: true})
             const filter = (i) => i.member.id === interaction.member.id
             const collector = response.createMessageComponentCollector({
@@ -102,21 +102,27 @@ function manageCard(names, nexts, nextChaps, currentChaps, currentIndex, interac
                 filter: filter
             })
             collector.on('collect', (interact => {
-                console.log(interact)
-                console.log("button " + interact.customId)
+                // console.log(interact)
+                // console.log("button " + interact.customId)
                 if (interact.customId == 'cancel' ) {
                     interact.update({content: "Cancelled", files: [], components: []})
                     return
                 }
                 if (interact.customId == 'next' ) {
-                    interact.message.delete()
-                    manageCard(names, nexts, nextChaps, currentChaps, currentIndex+1, interaction)
+                    console.log(currentIndex, nextChaps.length)
+                    console.log(currentIndex+1 < nextChaps.length)
+                    if (currentIndex+1 < names.length) {
+                        interact.message.delete()
+                        manageCard(names, nexts, nextChaps, currentChaps, currentIndex+1, interaction)
+                        return
+                    } else interact.update({ content: "You are all caught up!!!", files: [], components: []})
                     return
+                    
                 }
                 if (interact.customId == 'read') {
                     const row = new ActionRowBuilder()
                     getNextList(nextURL, name).then((selectList) => {
-                        mangeReadSelection.addOptions(selectList.slice(0,25))
+                        mangeReadSelection.setOptions(selectList)
                         const row = new ActionRowBuilder()
                             .addComponents(mangeReadSelection)
                             interact.update({ components: [row]})
@@ -127,12 +133,12 @@ function manageCard(names, nexts, nextChaps, currentChaps, currentIndex, interac
                 if (interact.customId == 'select') {
                     console.log(interact.values[0])
                     getManga.getMangaFull(interact.values[0]).then(function(updateData) {
-                        // console.log(data)
                         if (updateData != -1) getManga.setUpChaps(updateData[0],updateData[1],updateData[2],updateData[3],updateData[4], interaction.member.id, interact.values[0])
-                        // interaction.deferReply({ ephemeral: true })
-                        // interact.update({ content: "Updated read chapter to " + updateData[2], files: [], components: []})
-                        interact.message.delete()
-                        manageCard(names, nexts, nextChaps, currentChaps, currentIndex+1, interaction)
+                        if (currentIndex+1 < names.length) {
+                            interact.message.delete()
+                            manageCard(names, nexts, nextChaps, currentChaps, currentIndex+1, interaction)
+                            return
+                        } else interact.update({ content: "You are all caught up!!!", files: [], components: []})
                         return
                     })
                     return

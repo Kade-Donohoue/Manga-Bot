@@ -105,7 +105,7 @@ async function getMangaFull(url) {
 }
 
 function setUpChaps(chaps, name, currentTitle, nextTitle , latestTitle, authID, URL){
-    if (nextTitle == "") nextTitle = ""
+    if (nextTitle == "") nextTitle = latestTitle
     // console.log("name : ")
     // console.log(name)
     // console.log("chaps : ")
