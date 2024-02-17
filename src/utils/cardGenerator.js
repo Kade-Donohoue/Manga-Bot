@@ -1,7 +1,5 @@
 const { AttachmentBuilder } = require("discord.js")
 const Canvas = require('canvas')
-const fs = require('fs')
-
 
 async function generateCard(name, latest, current, next, total, updateTime) {
     latest = latest.charAt(0).toUpperCase() + latest.slice(1)

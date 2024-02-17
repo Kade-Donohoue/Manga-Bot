@@ -1,11 +1,11 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder, ComponentType, StringSelectMenuBuilder  } = require("discord.js")
 const BaseSubcommandExecutor = require("../../../src/utils/BaseSubCommandExecutor")
 const sqlite3 = require("sqlite3").verbose()
-let sql
-const { refreshSelect }  = require('../../../src/utils/updateManga')
 const { generateCard }  = require('../../../src/utils/cardGenerator')
 const { getUnread, getNextList }  = require('../../../src/utils/getAllUnread')
 const getManga = require("../../utils/puppeteer/manganato/getManga")
+
+let sql
 const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
     if (err) return console.error(err.message);
 })
@@ -32,18 +32,6 @@ const linkButton = new ButtonBuilder()
 const mangeReadSelection = new StringSelectMenuBuilder() 
     .setCustomId("select")
     .setPlaceholder("Select Where you Read to!!!")
-    // .addOptions([
-    //     {
-    //         label: 'Select me',
-    //         description: 'This is a description',
-    //         value: 'first_option',
-    //     },
-    //     {
-    //         label: 'You can select me too',
-    //         description: 'This is also a description',
-    //         value: 'second_option',
-    //     },
-    // ])
 
 module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
     constructor(baseCommand, group) {
@@ -54,20 +42,12 @@ module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
         const authID = interaction.member.id
         console.log(authID)
 
-        getUnread(authID).then(([names, nextLinks, nextChap, currentChap]) => {
-            console.log("Names:", names.length);
-            console.log("Next links:", nextLinks.length);
+        getUnread(authID).then(async ([names, nextLinks, nextChap, currentChap]) => {
+            if (names.length == 0) return interaction.reply({ content: "You have no Unread manga!", ephemeral: true })
 
-            console.log("Next chapter:", nextChap.length);
-            console.log("Current chapter:", currentChap.length);
-
-            interaction.reply({ content: "One Moment Please!", ephemeral: true })
-
-            interaction.deleteReply()
-
+            await interaction.deferReply({ ephemeral: true })
             manageCard(names, nextLinks, nextChap, currentChap, 0, interaction)
         })
-        // refreshSelect(name)
     }
 }
 
@@ -78,7 +58,7 @@ function manageCard(names, nexts, nextChaps, currentChaps, currentIndex, interac
     const current = currentChaps[currentIndex]
     const next = nextChaps[currentIndex]
 
-    console.log(name, nextURL)
+    // console.log(name, nextURL)
 
     sql = `SELECT * FROM mangaData WHERE mangaName = ?`
     data.get(sql,[name], (err, mangaRow)=> {
@@ -89,59 +69,57 @@ function manageCard(names, nexts, nextChaps, currentChaps, currentIndex, interac
         const updateTime = mangaRow.updateTime
         const chaps = mangaRow.list.split(",")
         generateCard(name.toString(), latest, current, next, (chaps.length + 1).toString() + " Chapters", updateTime).then(async function(data) {
-            // const response = await interaction.channel.send({ ephemeral: true })
+
             linkButton.setURL(String(nextURL))
+
             const row = new ActionRowBuilder()
-                .addComponents(cancelButton, linkButton, readButton, nextButton)
-            const attach = new AttachmentBuilder(data, { name: `${name}-card.png`})
-            // console.log(data)
-            response = await interaction.channel.send({ files: [attach], components: [row], ephemeral: true})
-            const filter = (i) => i.member.id === interaction.member.id
+                .addComponents(cancelButton, linkButton, readButton, nextButton) //groups buttons for message
+
+            const attach = new AttachmentBuilder(data, { name: `${name}-card.png`}) //creates discord attachment for message
+            response = await interaction.editReply({ content: "", files: [attach], components: [row], ephemeral: true}) //send card and buttons to user
+
+            const filter = (i) => i.member.id === interaction.member.id //filters button clicks to only the user that ran the feed command
             const collector = response.createMessageComponentCollector({
                 ComponentType: ComponentType.Button, 
                 filter: filter
             })
-            collector.on('collect', (interact => {
-                // console.log(interact)
-                // console.log("button " + interact.customId)
-                if (interact.customId == 'cancel' ) {
-                    interact.update({content: "Cancelled", files: [], components: []})
-                    return
+            collector.on('collect', ( async interact => {
+                if (interact.customId == 'cancel' ) { //sets message to cancelled and stops collector
+                    await interact.update({content: "Cancelled", files: [], components: []})
+                    collector.stop()
                 }
-                if (interact.customId == 'next' ) {
+                if (interact.customId == 'next' ) { //updates card to next card 
                     console.log(currentIndex, nextChaps.length)
                     console.log(currentIndex+1 < nextChaps.length)
                     if (currentIndex+1 < names.length) {
-                        interact.message.delete()
+                        console.log("MOREEEEEEEEEEEE")
+                        await interact.update({ content: "Updating Please Wait...", files: [], components: []})
                         manageCard(names, nexts, nextChaps, currentChaps, currentIndex+1, interaction)
-                        return
-                    } else interact.update({ content: "You are all caught up!!!", files: [], components: []})
-                    return
+                    } else  {
+                        
+                        await interact.update({ content: "You are all caught up!!!", files: [], components: []})
+                    }
+                    collector.stop()
                     
                 }
-                if (interact.customId == 'read') {
+                if (interact.customId == 'read') { // repllace buttons with dropdown to select current chap(limited to next 25 chaps)
                     const row = new ActionRowBuilder()
-                    getNextList(nextURL, name).then((selectList) => {
+                    getNextList(nextURL, name).then(async (selectList) => {
                         mangeReadSelection.setOptions(selectList)
                         const row = new ActionRowBuilder()
                             .addComponents(mangeReadSelection)
-                            interact.update({ components: [row]})
-                        return
+                            await interact.update({ components: [row]})
                     })
-                    return
                 }
-                if (interact.customId == 'select') {
+                if (interact.customId == 'select') { // updates current chap and goes to the next card
                     console.log(interact.values[0])
-                    getManga.getMangaFull(interact.values[0]).then(function(updateData) {
+                    getManga.getMangaFull(interact.values[0]).then(async function(updateData) {
                         if (updateData != -1) getManga.setUpChaps(updateData[0],updateData[1],updateData[2],updateData[3],updateData[4], interaction.member.id, interact.values[0])
                         if (currentIndex+1 < names.length) {
-                            interact.message.delete()
                             manageCard(names, nexts, nextChaps, currentChaps, currentIndex+1, interaction)
-                            return
-                        } else interact.update({ content: "You are all caught up!!!", files: [], components: []})
-                        return
+                        } else await interact.update({ content: "You are all caught up!!!", files: [], components: []})
                     })
-                    return
+                    collector.stop()
                 }
             }))
         })

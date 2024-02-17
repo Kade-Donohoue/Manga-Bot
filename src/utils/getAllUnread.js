@@ -41,8 +41,7 @@ async function getUnread(authID) {
             for (let i = 0; i < chaps.length; i++) {
                 if (chaps[i] == row.current) {
                     if (!chaps[i + 1]) {
-                        console.log("no save")
-                        continue
+                        continue 
                     }
                     info.push({ "name": name, "next": chaps[i + 1], "nextText": row.nextCard, "currentText": row.currentCard })
                     names.push(name)

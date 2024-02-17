@@ -15,7 +15,7 @@ puppeteer.use(adblocker)
  */
 async function getChapterList(url) {
     try {
-        const browser = await puppeteer.launch({headless: false, devtools: false, ignoreHTTPSErrors: true, 
+        const browser = await puppeteer.launch({headless: "new", devtools: false, ignoreHTTPSErrors: true, 
             args: ['--enable-features=NetworkService', '--no-sandbox', '--disable-setuid-sandbox','--mute-audio']})
         const page = await browser.newPage()
         page.setDefaultNavigationTimeout(0)

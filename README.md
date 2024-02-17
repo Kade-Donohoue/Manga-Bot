@@ -12,10 +12,25 @@ Discord bot that uses pupeteer to scrape webpages
 1. Download repo
 2. Install all required modules using `npm install`
 3. Fill out tokenSample.json with required info and rename it to token.json
-4. create a manga.db file in data folder
+4. create a `manga.db` file in data folder
 5. Use `node .` in repo folder to start the bot
 
 # **Change Logs**
+
+## Change Log v0.1.6
+- added message for when user provides invalid URL in add command
+- added message for when the user has no unread manga when using feed command
+- Feed command now uses updates and editing message instead of sending a new one and deleting a old one
+- Feed command collector now stops
+- removed some unused variables
+- removed temporary debugging console logs
+- enabled bot updating stored manga every 2 hours
+- updated bulk add command to use dedicated setupChaps function instead of its own
+- changed allUnread command to use dedicated unread function instead of its own
+- changed card command to use dedicated generate card function instead of its own
+- removed unused imports
+- switched puppeteer to be headless using the new version
+- getFullManga function will wait till icon saving is complete to return results 
 
 ## Change Log v0.1.5
  

@@ -24,7 +24,7 @@ const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>
 
 async function getMangaFull(url) {
     try {
-        const browser = await puppeteer.launch({headless: false, devtools: false, ignoreHTTPSErrors: true, 
+        const browser = await puppeteer.launch({headless: "new", devtools: false, ignoreHTTPSErrors: true, 
             args: ['--enable-features=NetworkService', '--no-sandbox', '--disable-setuid-sandbox','--mute-audio']})
         const page = await browser.newPage()
         page.setDefaultNavigationTimeout(0)
@@ -90,7 +90,7 @@ async function getMangaFull(url) {
         if (mangaName.length > 50) mangaName = mangaName.toString().slice(0,49)+'...'
         
         await browser.close()
-        getIcon.getMangaIcon(mangaURL, mangaName)
+        await getIcon.getMangaIcon(mangaURL, mangaName)
 
         // console.log(chapterList)
         var tmp = chapterList.slice(-1)
@@ -105,7 +105,7 @@ async function getMangaFull(url) {
 }
 
 function setUpChaps(chaps, name, currentTitle, nextTitle , latestTitle, authID, URL){
-    if (nextTitle == "") nextTitle = latestTitle
+    if (!nextTitle) nextTitle = latestTitle
     // console.log("name : ")
     // console.log(name)
     // console.log("chaps : ")

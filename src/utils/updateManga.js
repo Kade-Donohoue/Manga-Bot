@@ -20,7 +20,7 @@ const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>
 
 
 async function chapMang(currentURL) {
-    const browser = await puppeteer.launch({headless: false, devtools: false, ignoreHTTPSErrors: true,
+    const browser = await puppeteer.launch({headless: "new", devtools: false, ignoreHTTPSErrors: true,
         args: ['--enable-features=NetworkService', '--no-sandbox', '--disable-setuid-sandbox'
     ]}) //change to true Once testing complete
     const page = await browser.newPage()

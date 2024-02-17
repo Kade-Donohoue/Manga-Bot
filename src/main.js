@@ -1,18 +1,12 @@
 const {REST} = require('@discordjs/rest')
-const {AttachmentBuilder, Client, GatewayIntentBits, Routes, Collection, InteractionType, ComponentType} = require('discord.js')
+const {Client, GatewayIntentBits, Routes, Collection, InteractionType, ComponentType} = require('discord.js')
 const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]})
 const token = require('../token.json')
 const rest = new REST({ version: '10' }).setToken(token.code)
-console.log("Discord.JS v" + require('discord.js').version)
 
-const fs = require('fs')
 const Fuse = require("fuse.js")
 const sqlite3 = require("sqlite3").verbose()
 
-
-const chapList = require("./utils/puppeteer/manganato/getChapList")
-const getIcon = require("./utils/puppeteer/manganato/getIcon")
-const getAll = require("./utils/puppeteer/manganato/getManga")
 const { refreshAll }  = require('./utils/updateManga')
 const {registerCommands, registerSubCommands} = require('./utils/registry')
 
@@ -22,7 +16,6 @@ const fuseOptions = {
 	shouldSort: true,
 	includeMatches: false,
 	findAllMatches: true,
-	// minMatchCharLength: 1,
 	threshold: 0.4,
 	ignoreLocation: true,
 }
@@ -39,11 +32,12 @@ data.run(sql)
 sql = `CREATE TABLE IF NOT EXISTS mangaData (mangaName,list,newest,latestCard,updateTime)`
 data.run(sql)
 
-// setInterval(refreshAll, 7200000) // Check all Manga Every 2 hours
+setInterval(refreshAll, 7200000) // Check all Manga Every 2 hours
 
 client.on('ready', () => {
+    console.log("Discord.JS v" + require('discord.js').version)
     console.log(client.user.tag + ' Has logged in')
-    // refreshAll()
+    refreshAll()
 })
 
 client.on('interactionCreate', (interaction) => {
@@ -71,28 +65,15 @@ client.on('interactionCreate', (interaction) => {
             cmd.run(client, interaction)
         } else interaction.reply({ content: "An error occured. This command does nothing"})
     } else if (interaction.type = InteractionType.ApplicationCommandAutocomplete) {
-        const {commandName} = interaction
         const cmd = interaction.commandName
-        const subcommandName = interaction.options.getSubcommand(false)
-        if (!cmd) return
-        
+        if (!cmd) return 
         try {
             mangaListUpdate(interaction, client)
-            // subcommandName.autoComplete(interaction, client)
         } catch (err) {
             console.error(err)
         }
     }
 })
-
-// Lines for Manually deleting entries as needed
-
-// sql = `DELETE FROM mangaData WHERE mangaName = ?`;
-// data.run(sql,['Life of a Magic Academy Mage'],(err)=>{if (err) return console.error(err.message);})
-
-// sql = `DELETE FROM userData WHERE mangaName = ?`;
-// data.run(sql,['Life of a Magic Academy Mage'],(err)=>{if (err) return console.error(err.message);})
-
 
 // Update Manga for Autofill results
 async function mangaListUpdate(interaction, client) {
