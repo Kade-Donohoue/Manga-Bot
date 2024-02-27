@@ -97,6 +97,10 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
             .setName('forgetme')
             .setDescription('Removes any data that tracks what you have read')
         )
+        .addSubcommand((subcommand) => subcommand 
+            .setName('mystats')
+            .setDescription('Provides a card containing Statistics based on your tracked manga')
+        )
         .toJSON()
     }
 }

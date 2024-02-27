@@ -3,8 +3,8 @@
 Discord bot that uses pupeteer to scrape webpages
 
 ## Requirements
-- node JS 20.11.0 or greater
-- npm 10.2.4 or greater
+- node JS 20.11.0
+- npm 10.2.4
 - an application created in the discord developer portal
 
 
@@ -16,6 +16,16 @@ Discord bot that uses pupeteer to scrape webpages
 5. Use `node .` in repo folder to start the bot
 
 # **Change Logs**
+
+## Change Log v0.1.7
+- fixed issue with bulk add command where it would reply that its done before it is
+- Improved wording of initial reply of bulk command
+- Created new command myStats that returns a card containing user statistics based on tracked manga
+- Added new cardGenerator function to create User Statistics Card
+- Created template for User statistics (not final version)
+- changed update All function to wait until prior manga us updated rather than just waiting 4 seconds. This is to allow lower powered systems to not get overwhelmed 
+- Moved token location to data folder
+
 
 ## Change Log v0.1.6
 - added message for when user provides invalid URL in add command

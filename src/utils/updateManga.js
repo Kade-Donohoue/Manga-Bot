@@ -143,38 +143,32 @@ async function setUpChaps(chaps, name, latestTitle) {
     })
 }
 
-function refreshSelect(mangaName) {
-    sql = `SELECT newest FROM mangaData WHERE mangaName = ?`;
-    data.get(sql,[mangaName], (err, row)=> {
-        if (err) return console.error(err.message)
-        if (!row) return
+async function refreshSelect(mangaName) {
+    await new Promise(async resolve => {
+        sql = `SELECT newest FROM mangaData WHERE mangaName = ?`;
+        data.get(sql,[mangaName], async (err, row)=> {
+            if (err) return console.error(err.message)
+            if (!row) return
+            currentURL = row.newest
 
-        currentURL = row.newest
-        // console.log(currentURL)
-
-        if (!currentURL.includes("http")) return
-        if (currentURL.includes('chapmang')) chapMang(currentURL)
-        // if (currentURL.includes('asura')) asura(currentURL)
-        // if (URL.includes('reaperscan')) reaperMang()
+            if (!currentURL.includes("http")) return
+            if (currentURL.includes('chapmang')) await chapMang(currentURL)
+            resolve()
+            // if (currentURL.includes('asura')) asura(currentURL)
+            // if (URL.includes('reaperscan')) reaperMang()
+        })
     })
 }
 
 function refreshAll() {
     sql = `SELECT mangaName FROM mangaData`;
-    data.all(sql,[], (err, rows)=> {
+    data.all(sql,[], async (err, rows)=> {
         if (err) return console.error(err.message)
         if (!rows) return
-
-        // console.log(rows)
         const names = rows.map(row => row.mangaName)
-        // console.log(names)
+
         for (let i=0; i<names.length; i++) {
-            
-            setTimeout(() => {
-                refreshSelect(names[i])
-                // console.log(names[i])
-            }, 4000 * i)
-            
+                await refreshSelect(names[i])
         }
     })
 }

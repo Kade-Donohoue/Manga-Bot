@@ -6,10 +6,10 @@ module.exports = class mangaBulkAddSubCommand extends BaseSubcommandExecutor {
         super(baseCommand, group, 'bulkadd')
     }
 
-    run(client, interaction) {
+    async run(client, interaction) {
         const authID = interaction.member.id
         const URLS = interaction.options.get('manga_url').value.split(",")
-        interaction.reply({ content : 'Wait One Moment Please ...', ephemeral: true  })
+        await interaction.reply({ content : 'This will take a minute please wait...', ephemeral: true  })
         loop(0)
  
         function loop(i) {
@@ -17,14 +17,16 @@ module.exports = class mangaBulkAddSubCommand extends BaseSubcommandExecutor {
             
             if (!URL.includes("http")) return
             if (URL.includes('chapmang')) getManga.getMangaFull(URL).then(function(data) {
+                if (data != -1) getManga.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL)
                 if (i < URLS.length -1) {
                     loop(i+1)
+                } else {
+                    interaction.editReply("Done!")
                 }
-                if (data != -1) getManga.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL)
             })
             
         }    
 
-        interaction.followUp("Done!")
+        
     }
 }
