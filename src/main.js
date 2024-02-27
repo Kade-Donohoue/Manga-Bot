@@ -1,7 +1,7 @@
 const {REST} = require('@discordjs/rest')
 const {Client, GatewayIntentBits, Routes, Collection, InteractionType, ComponentType} = require('discord.js')
 const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]})
-const token = require('./data/token.json')
+const token = require('../data/token.json')
 const rest = new REST({ version: '10' }).setToken(token.code)
 
 const Fuse = require("fuse.js")

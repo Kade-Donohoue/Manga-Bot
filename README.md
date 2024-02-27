@@ -18,6 +18,10 @@ Discord bot that uses pupeteer to scrape webpages
 # **Change Logs**
 
 ## Change Log v0.1.7
+- Fixxed token import
+
+
+## Change Log v0.1.7
 - fixed issue with bulk add command where it would reply that its done before it is
 - Improved wording of initial reply of bulk command
 - Created new command myStats that returns a card containing user statistics based on tracked manga
