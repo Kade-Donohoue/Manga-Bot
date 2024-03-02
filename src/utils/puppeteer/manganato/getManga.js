@@ -25,7 +25,7 @@ const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>
 
 async function getMangaFull(url, icon = true) {
     try {
-        const browser = await puppeteer.launch({headless: false, devtools: false, ignoreHTTPSErrors: true, //"new"
+        const browser = await puppeteer.launch({headless: "new", devtools: false, ignoreHTTPSErrors: true, //"new"
             args: ['--enable-features=NetworkService', '--no-sandbox', '--disable-setuid-sandbox','--mute-audio']})
         const page = await browser.newPage()
         page.setDefaultNavigationTimeout(5*60*1000) // timeout nav after 5 min

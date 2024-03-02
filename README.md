@@ -17,6 +17,10 @@ Discord bot that uses pupeteer to scrape webpages
 
 # **Change Logs**
 
+## Change Log v0.1.8 (HotFix)
+- change pupeteer back to be headless
+- fixed tokenSample.json with new data
+
 ## Change Log v0.1.8
 - Added userCategories that the user can use to sort manga and show feed of just certain categories
 - added option to not load icon when Fetching Manga data
