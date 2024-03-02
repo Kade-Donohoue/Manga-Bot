@@ -8,14 +8,14 @@ const adblocker = AdblockerPlugin({
   blockTrackers: true // default: false
 })
 puppeteer.use(adblocker)
-
+const delay = ms => new Promise(res => setTimeout(res, ms));
 /**
  * Gets the chapter list from ChapManganato
  * @param url: Main page URL of a manga from ChapManganato. 
  * @returns -1 if icon saving fails. Returns 1 if the image save sucessfully. Saves photo to data/icon folder
  */
 async function getMangaIcon(url, title) {
-    const browser = await puppeteer.launch({headless: "new", devtools: false, ignoreHTTPSErrors: true, 
+    const browser = await puppeteer.launch({headless: false, devtools: false, ignoreHTTPSErrors: true, 
         args: ['--enable-features=NetworkService', '--no-sandbox', '--disable-setuid-sandbox','--mute-audio']})
     try {
         console.log("starting Icon Save")
@@ -23,7 +23,7 @@ async function getMangaIcon(url, title) {
         page.setDefaultNavigationTimeout(15000)
         page.setRequestInterception(true)
 
-        const blockRequests = wildcardMatch(['*.css', '*.js', '*facebook*'], {separator: false})
+        const blockRequests = wildcardMatch(['*.css*', '*.js*', '*facebook*', '*.png*', '*google*', '*fonts*'], {separator: false})
         page.on('request', (request) => {
             const u = request.url()
             if (blockRequests(u)) {
@@ -37,6 +37,7 @@ async function getMangaIcon(url, title) {
         page.viewport({width: 960, height: 1040})
 
         page.goto(url)
+        // await delay(300000)
         const photoPage = await page.waitForSelector('body > div.body-site > div.container.container-main > div.container-main-left > div.panel-story-info > div.story-info-left > span.info-image > img', 
         {
             waitUntil: 'load',

@@ -17,8 +17,26 @@ Discord bot that uses pupeteer to scrape webpages
 
 # **Change Logs**
 
-## Change Log v0.1.7
-- Fixxed token import
+## Change Log v0.1.8
+- Added userCategories that the user can use to sort manga and show feed of just certain categories
+- added option to not load icon when Fetching Manga data
+- BiHourly refresh of all manga no longer fetches icon as well reducing time required. 
+- added 5 minute timeout for fetching manga
+- When updating current chapter using feed command icon is no longer updated
+- getManga getMangaFull has option to not get icon
+- added option in token to use global commands
+- Fixed token import
+- removed getManga function from myStats
+- added descriptions to many of the functions
+- updateManga refreshSelect now uses getManga function instead of its own
+- updateManga now updates data instead of silently doing nothing
+- updateManga now adds the time it updated to the db
+- removed debug console logs
+- changed discord JS version to be logged at start rather than once bot starts
+- Added whitelist for getting manga chapters
+- improved ability to block css and js when loading page
+- added bidgear to blocklist
+
 
 
 ## Change Log v0.1.7

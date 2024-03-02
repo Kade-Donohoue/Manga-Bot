@@ -17,7 +17,6 @@ module.exports = class mangaMyStatSubCommand extends BaseSubcommandExecutor {
         const currentTime = new Date().toLocaleDateString("en-US", {year: "numeric", month: "numeric", day: "numeric", timeZone: "America/Los_Angeles", timeZoneName: "short", hour: "numeric", minute: "numeric", hour12: true })
     
         await interaction.deferReply({ ephemeral: true })
-        console.log(interaction.member.user.globalName)
         sql = `SELECT * FROM userData WHERE userID = ?`
         data.all(sql, [authID], async (err, userRow) => {
             var chaptersRead = 0
@@ -48,26 +47,4 @@ module.exports = class mangaMyStatSubCommand extends BaseSubcommandExecutor {
             })
         })
     }
-}
-
-async function getManga(name, currentURL) {
-    console.log("STARRRRRRRRRTY")
-    sql = `SELECT * FROM mangaData WHERE mangaName = ?`
-    await data.get(sql, [name], (err, mangaRow) => {
-        if (err) return [0,0,0]
-        // console.log(mangaRow)
-        // console.log(mangaRow.mangaName)
-        const mangaChaps = mangaRow.list.split(",")
-        // console.log(mangaChaps)
-        const chapIndex = mangaChaps.indexOf(currentURL)
-        console.log(chapIndex)
-        const chaptersRead = chapIndex+1
-        console.log(chaptersRead)
-        const chaptersUnread = mangaChaps.length-chapIndex
-        
-        console.log("YEEEEEESSSSSSSS")
-        if (mangaChaps[-1] != currentURL) return [chaptersRead, chaptersUnread, 0]
-        return [chaptersRead, chaptersUnread, 1]
-    })
-    
 }

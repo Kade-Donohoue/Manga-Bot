@@ -1,6 +1,17 @@
 const { AttachmentBuilder } = require("discord.js")
 const Canvas = require('canvas')
 
+
+/**
+ * Generates Card
+ * @param {string} name: Name of the Manga
+ * @param {string} latest: Text for latest Chapter
+ * @param {string} current: Text for current Chapter
+ * @param {string} next: Text for next Chapter
+ * @param {string} total: Text for total amount of Chapters
+ * @param {string} updateTime: Text for the last time the data was updated
+ * @returns buffer of image data
+ */
 async function generateCard(name, latest, current, next, total, updateTime) {
     latest = latest.charAt(0).toUpperCase() + latest.slice(1)
     next = next.charAt(0).toUpperCase() + next.slice(1)
@@ -54,6 +65,17 @@ async function generateCard(name, latest, current, next, total, updateTime) {
     // interaction.reply({ files: [attachment], ephemeral: true })
 }
 
+
+/**
+ * Generates Card
+ * @param {string} userName: Name of the user
+ * @param {string} mangaRead: Text for amount of mangas tracked
+ * @param {string} chaptersRead: Text for Amount of chapters read
+ * @param {string} mangaUnread: Text for amount of chapters that have unread chapters
+ * @param {string} chaptersUnread: Text for total unread Chapters
+ * @param {string} updateTime: Time the card was requested
+ * @returns buffer of image data
+ */
 async function generateUserStatCard(userName, mangaRead, chaptersRead, mangaUnread, chaptersUnread, updateTime) {
     mangaRead = mangaRead.charAt(0).toUpperCase() + mangaRead.slice(1)
     chaptersRead = chaptersRead.charAt(0).toUpperCase() + chaptersRead.slice(1)
@@ -111,6 +133,14 @@ async function generateUserStatCard(userName, mangaRead, chaptersRead, mangaUnre
     // interaction.reply({ files: [attachment], ephemeral: true })
 }
 
+
+/**
+ * Finds the correct font size to get text to fit in a certain width
+ * @param {Canvas Instance} canvas: Canvas Instance to use
+ * @param {string} text: Text to find font size of
+ * @param {*} width: Max width wanted for text
+ * @returns font from canvas context
+ */
 const applyText = (canvas, text, width) => {
     const ctx = canvas.getContext('2d')
     // console.log(ctx)

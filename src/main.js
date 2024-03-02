@@ -1,3 +1,4 @@
+console.log("Discord.JS v" + require('discord.js').version)
 const {REST} = require('@discordjs/rest')
 const {Client, GatewayIntentBits, Routes, Collection, InteractionType, ComponentType} = require('discord.js')
 const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]})
@@ -26,7 +27,7 @@ const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>
     if (err) return console.error(err.message);
 })
 //Create Databases if not exist
-sql = `CREATE TABLE IF NOT EXISTS userData (userID,mangaName,current,currentCard,nextCard)`
+sql = `CREATE TABLE IF NOT EXISTS userData (userID,mangaName,current,currentCard,nextCard,userCat)`
 data.run(sql)
 
 sql = `CREATE TABLE IF NOT EXISTS mangaData (mangaName,list,newest,latestCard,updateTime)`
@@ -34,8 +35,7 @@ data.run(sql)
 
 setInterval(refreshAll, 7200000) // Check all Manga Every 2 hours
 
-client.on('ready', () => {
-    console.log("Discord.JS v" + require('discord.js').version)
+client.on('ready', () => { 
     console.log(client.user.tag + ' Has logged in')
     refreshAll()
 })
@@ -99,35 +99,32 @@ async function mangaListUpdate(interaction, client) {
 
             interaction.respond(fuseRes.map((choice) => ({ name: choice.item, value: choice.item})))
         })
-        
-        
-        
-        
     }
-    
-    
-    
 }
 
-//Creates slash Commands
+/**
+ * Finds all commands and registers them with discord then logs the bot into discord
+ */
 async function main() {
     try {
         client.slashCommands = new Collection()
         client.slashSubcommands = new Collection()
-        await registerCommands(client, '../commands')
+        // await registerCommands(client, '../commands') //commented out as only sub commands are used
         await registerSubCommands(client, '../subCommands')
-        const slashCommandsJson = client.slashCommands.map((cmd) => cmd.getCommandJson())
+        // const slashCommandsJson = client.slashCommands.map((cmd) => cmd.getCommandJson())
         const slashSubCommandsJson = client.slashSubcommands.map((cmd) => cmd.getCommandJson())
-        console.log('Refreshing slash Commands')
-        // console.log(slashCommandsJson+slashSubCommandsJson)
-        await rest.put(Routes.applicationGuildCommands(token.appID, token.guildID), {
-            body: [...slashCommandsJson, ...slashSubCommandsJson],
-        })
-        const registeredCommands = await rest.get(
-            Routes.applicationGuildCommands(token.appID, token.guildID)
-        )
+        if (token.globalCommands) {
+            console.log("Registering Global Commands")
+            await rest.put(Routes.applicationCommands(token.appID), {
+                body: [/*...slashCommandsJson, */...slashSubCommandsJson],
+            })
+        } else {
+            console.log("Registering Guild Commands")
+            await rest.put(Routes.applicationGuildCommands(token.appID, token.guildID), {
+                body: [/*...slashCommandsJson, */...slashSubCommandsJson],
+            })
+        }
         console.log('Slash Commands Refreshed')
-        // console.log(registeredCommands)
         await client.login(token.code)
     }catch (err) {console.log(err)}
 }

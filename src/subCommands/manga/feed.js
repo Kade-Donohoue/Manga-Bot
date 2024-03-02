@@ -4,6 +4,7 @@ const sqlite3 = require("sqlite3").verbose()
 const { generateCard }  = require('../../../src/utils/cardGenerator')
 const { getUnread, getNextList }  = require('../../../src/utils/getAllUnread')
 const getManga = require("../../utils/puppeteer/manganato/getManga")
+const { executablePath } = require("puppeteer")
 
 let sql
 const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
@@ -14,6 +15,11 @@ const cancelButton = new ButtonBuilder()
     .setCustomId("cancel")
     .setLabel("Cancel")
     .setStyle(ButtonStyle.Danger)
+
+    const prevButton = new ButtonBuilder()
+    .setCustomId('prev')
+    .setLabel('Previous')
+    .setStyle(ButtonStyle.Primary);
 
 const nextButton = new ButtonBuilder()
     .setCustomId('next')
@@ -40,9 +46,12 @@ module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
 
     async run(client, interaction) {
         const authID = interaction.member.id
-        console.log(authID)
+        var userCat = null
+        try {
+            userCat = interaction.options.get('category').value
+        } catch{}
 
-        getUnread(authID).then(async ([names, nextLinks, nextChap, currentChap]) => {
+        getUnread(authID, userCat).then(async ([names, nextLinks, nextChap, currentChap]) => {
             if (names.length == 0) return interaction.reply({ content: "You have no Unread manga!", ephemeral: true })
 
             await interaction.deferReply({ ephemeral: true })
@@ -51,14 +60,23 @@ module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
     }
 }
 
+
+/**
+ * Manages providing new cards and handling button presses for feed command
+ * @param names: List of Manga Names
+ * @param nexts: List of Next Chapter URL
+ * @param nextChaps: List of Next Chapter Card Text
+ * @param currentChaps: List of Current Chapter Card Text
+ * @param currentIndex: Vurrent index value of lists
+ * @param interaction: interaction to reply to
+ * @returns Nothing 
+ */
 function manageCard(names, nexts, nextChaps, currentChaps, currentIndex, interaction) {
     
     const name = names[currentIndex]
     const nextURL = nexts[currentIndex]
     const current = currentChaps[currentIndex]
     const next = nextChaps[currentIndex]
-
-    // console.log(name, nextURL)
 
     sql = `SELECT * FROM mangaData WHERE mangaName = ?`
     data.get(sql,[name], (err, mangaRow)=> {
@@ -73,7 +91,7 @@ function manageCard(names, nexts, nextChaps, currentChaps, currentIndex, interac
             linkButton.setURL(String(nextURL))
 
             const row = new ActionRowBuilder()
-                .addComponents(cancelButton, linkButton, readButton, nextButton) //groups buttons for message
+                .addComponents(cancelButton, linkButton, readButton, prevButton, nextButton) //groups buttons for message
 
             const attach = new AttachmentBuilder(data, { name: `${name}-card.png`}) //creates discord attachment for message
             response = await interaction.editReply({ content: "", files: [attach], components: [row], ephemeral: true}) //send card and buttons to user
@@ -89,12 +107,20 @@ function manageCard(names, nexts, nextChaps, currentChaps, currentIndex, interac
                     collector.stop()
                 }
                 if (interact.customId == 'next' ) { //updates card to next card 
-                    console.log(currentIndex, nextChaps.length)
-                    console.log(currentIndex+1 < nextChaps.length)
                     if (currentIndex+1 < names.length) {
-                        console.log("MOREEEEEEEEEEEE")
                         await interact.update({ content: "Updating Please Wait...", files: [], components: []})
                         manageCard(names, nexts, nextChaps, currentChaps, currentIndex+1, interaction)
+                    } else  {
+                        
+                        await interact.update({ content: "You are all caught up!!!", files: [], components: []})
+                    }
+                    collector.stop()
+                    
+                }
+                if (interact.customId == 'prev' ) { //updates card to next card 
+                    if (currentIndex+1 < names.length) {
+                        await interact.update({ content: "Updating Please Wait...", files: [], components: []})
+                        manageCard(names, nexts, nextChaps, currentChaps, currentIndex-1, interaction)
                     } else  {
                         
                         await interact.update({ content: "You are all caught up!!!", files: [], components: []})
@@ -112,8 +138,7 @@ function manageCard(names, nexts, nextChaps, currentChaps, currentIndex, interac
                     })
                 }
                 if (interact.customId == 'select') { // updates current chap and goes to the next card
-                    console.log(interact.values[0])
-                    getManga.getMangaFull(interact.values[0]).then(async function(updateData) {
+                    getManga.getMangaFull(interact.values[0], false).then(async function(updateData) {
                         if (updateData != -1) getManga.setUpChaps(updateData[0],updateData[1],updateData[2],updateData[3],updateData[4], interaction.member.id, interact.values[0])
                         if (currentIndex+1 < names.length) {
                             manageCard(names, nexts, nextChaps, currentChaps, currentIndex+1, interaction)

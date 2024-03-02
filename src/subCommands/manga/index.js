@@ -65,6 +65,20 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
                 .setDescription('URL for the Manga')
                 .setRequired(true)
             )
+            .addStringOption((option) => option 
+                .setName('category')
+                .setDescription('Category you want Manga in')
+                .setRequired(true)
+                .addChoices(
+                    { name: 'Reading', value: 'reading' }, 
+                    { name: 'Not Reading', value: 'notreading' },
+                    { name: 'Hold', value: 'hold' },
+                    { name: 'Hiatus', value: 'hiatus' },
+                    { name: 'Finished', value: 'finished' }, 
+                    { name: 'In Queue', value: 'inqueue' },
+                    { name: 'Other', value: 'other' }
+                )
+            )
         )
         .addSubcommand((subcommand) => subcommand 
             .setName('bulkadd')
@@ -73,6 +87,19 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
                 .setName('manga_url')
                 .setDescription('URL for the Manga seperated by command and no spaces. EX: link1,link2,link3...')
                 .setRequired(true)
+            )
+            .addStringOption((option) => option 
+                .setName('category')
+                .setDescription('Category you want Manga in')
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Reading', value: 'reading' }, 
+                    { name: 'Not Reading', value: 'notreading' },
+                    { name: 'Hiatus', value: 'hiatus' },
+                    { name: 'Finished', value: 'finished' }, 
+                    { name: 'In Queue', value: 'inqueue' },
+                    { name: 'Other', value: 'other' }
+                )
             )
         )
         .addSubcommand((subcommand) => subcommand 
@@ -92,6 +119,20 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
         .addSubcommand((subcommand) => subcommand 
             .setName('feed')
             .setDescription('Provides cards of all unread manga one at a time')
+            .addStringOption((option) => option 
+                .setName('category')
+                .setDescription('Select What Category you want the feed from (select nothing to use all)')
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Reading', value: 'reading' }, 
+                    { name: 'Not Reading', value: 'notreading' },
+                    { name: 'Hold', value: 'hold' },
+                    { name: 'Hiatus', value: 'hiatus' },
+                    { name: 'Finished', value: 'finished' }, 
+                    { name: 'In Queue', value: 'inqueue' },
+                    { name: 'Other', value: 'other' }
+                )
+            )
         )
         .addSubcommand((subcommand) => subcommand 
             .setName('forgetme')
