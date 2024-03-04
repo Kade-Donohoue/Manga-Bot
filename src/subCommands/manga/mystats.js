@@ -13,7 +13,7 @@ module.exports = class mangaMyStatSubCommand extends BaseSubcommandExecutor {
     }
 
     async run(client, interaction) {
-        const authID = interaction.member.id
+        const authID = interaction.user.id
         const currentTime = new Date().toLocaleDateString("en-US", {year: "numeric", month: "numeric", day: "numeric", timeZone: "America/Los_Angeles", timeZoneName: "short", hour: "numeric", minute: "numeric", hour12: true })
     
         await interaction.deferReply({ ephemeral: true })
@@ -41,8 +41,8 @@ module.exports = class mangaMyStatSubCommand extends BaseSubcommandExecutor {
             });
             await Promise.all(mangaQueries);
     
-            generateUserStatCard(interaction.member.user.globalName, `${userRow.length} Manga`, `${chaptersRead} Chapters`, `${mangasUnread} Manga`, `${chaptersUnread} Chapters`, currentTime).then(function(data) {
-                const attach = new AttachmentBuilder(data, { name: `${interaction.member.username}-card.png`})
+            generateUserStatCard(interaction.user.globalName, `${userRow.length} Manga`, `${chaptersRead} Chapters`, `${mangasUnread} Manga`, `${chaptersUnread} Chapters`, currentTime).then(function(data) {
+                const attach = new AttachmentBuilder(data, { name: `${interaction.user.username}-card.png`})
                 interaction.editReply({ content: "", files: [attach], ephemeral: true})
             })
         })

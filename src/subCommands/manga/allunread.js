@@ -8,7 +8,7 @@ module.exports = class mangaAllunreadSubCommand extends BaseSubcommandExecutor {
     }
 
     async run(client, interaction) {
-        const authID = interaction.member.id
+        const authID = interaction.user.id
         await interaction.reply({ content: bold("New Manga as of " + time(new Date(), "f")), ephemeral: true })
         getUnread(authID).then(async ([names, nextLinks, nextChap, currentChap]) => {
             if (names.length == 0) return interaction.reply({ content: "You have no Unread manga!", ephemeral: true })

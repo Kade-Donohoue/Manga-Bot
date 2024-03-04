@@ -3,6 +3,7 @@ const {REST} = require('@discordjs/rest')
 const {Client, GatewayIntentBits, Routes, Collection, InteractionType, ComponentType} = require('discord.js')
 const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]})
 const token = require('../data/token.json')
+const config = require('../data/config.json')
 const rest = new REST({ version: '10' }).setToken(token.code)
 
 const Fuse = require("fuse.js")
@@ -33,7 +34,7 @@ data.run(sql)
 sql = `CREATE TABLE IF NOT EXISTS mangaData (mangaName,list,newest,latestCard,updateTime)`
 data.run(sql)
 
-setInterval(refreshAll, 7200000) // Check all Manga Every 2 hours
+setInterval(refreshAll, config.updateDelay) // Check all Manga Every 2 hours
 
 client.on('ready', () => { 
     console.log(client.user.tag + ' Has logged in')
@@ -82,7 +83,7 @@ async function mangaListUpdate(interaction, client) {
     if (!search) search = " "
     if (focusedValue.name === 'your_title') {
         sql = `SELECT mangaName FROM userData WHERE userID = ?`
-        await data.all(sql,[interaction.member.id], (err, rows)=> {
+        await data.all(sql,[interaction.user.id], (err, rows)=> {
             const names = rows.map(row => row.mangaName)
             const fuse = new Fuse(names, fuseOptions)
             fuseRes = fuse.search(search).slice(0,25)
@@ -113,7 +114,7 @@ async function main() {
         await registerSubCommands(client, '../subCommands')
         // const slashCommandsJson = client.slashCommands.map((cmd) => cmd.getCommandJson())
         const slashSubCommandsJson = client.slashSubcommands.map((cmd) => cmd.getCommandJson())
-        if (token.globalCommands) {
+        if (config.globalCommands) {
             console.log("Registering Global Commands")
             await rest.put(Routes.applicationCommands(token.appID), {
                 body: [/*...slashCommandsJson, */...slashSubCommandsJson],

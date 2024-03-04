@@ -24,9 +24,9 @@ const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>
  */
 
 async function getMangaFull(url, icon = true) {
-    try {
-        const browser = await puppeteer.launch({headless: "new", devtools: false, ignoreHTTPSErrors: true, //"new"
+    const browser = await puppeteer.launch({headless: "new", devtools: false, ignoreHTTPSErrors: true, //"new"
             args: ['--enable-features=NetworkService', '--no-sandbox', '--disable-setuid-sandbox','--mute-audio']})
+    try {
         const page = await browser.newPage()
         page.setDefaultNavigationTimeout(5*60*1000) // timeout nav after 5 min
         page.setRequestInterception(true)
@@ -108,10 +108,11 @@ async function getMangaFull(url, icon = true) {
         return [chapterList, mangaName, currentTitle, chapNext, latestChapter]
         
     } catch {
+        await browser.close()
         return -1
     }
 }
-const delay = ms => new Promise(res => setTimeout(res, ms));
+const delay = ms => new Promise(res => setTimeout(res, ms))
 
 /**
  * Saves data to manga.db

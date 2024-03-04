@@ -15,7 +15,7 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
  * @returns -1 if icon saving fails. Returns 1 if the image save sucessfully. Saves photo to data/icon folder
  */
 async function getMangaIcon(url, title) {
-    const browser = await puppeteer.launch({headless: false, devtools: false, ignoreHTTPSErrors: true, 
+    const browser = await puppeteer.launch({headless: "new", devtools: false, ignoreHTTPSErrors: true, 
         args: ['--enable-features=NetworkService', '--no-sandbox', '--disable-setuid-sandbox','--mute-audio']})
     try {
         console.log("starting Icon Save")

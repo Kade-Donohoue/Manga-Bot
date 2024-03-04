@@ -7,7 +7,7 @@ module.exports = class mangaAddSubCommand extends BaseSubcommandExecutor {
     }
 
     async run(client, interaction) {
-        const authID = interaction.member.id
+        const authID = interaction.user.id
         const URL = interaction.options.get('manga_url').value
         const userCat = interaction.options.get('category').value
         await interaction.deferReply({ephemeral: true})

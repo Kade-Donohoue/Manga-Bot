@@ -26,7 +26,7 @@ module.exports = class mangaforgetMeSubCommand extends BaseSubcommandExecutor {
     async run(client, interaction) {
 
         const response = await interaction.reply({ content: 'Are you sure you want to PERMANENTLY REMOVE ALL your tracked manga?', components: [row], ephemeral: true})
-        const filter = (i) => i.member.id === interaction.member.id
+        const filter = (i) => i.user.id === interaction.user.id
         const collector = response.createMessageComponentCollector({
             ComponentType: ComponentType.Button, 
             filter: filter
@@ -37,7 +37,7 @@ module.exports = class mangaforgetMeSubCommand extends BaseSubcommandExecutor {
                 console.log("Deleted User!!!!!!!!!!!")
                 
                 sql = `DELETE FROM userData WHERE userID = ?`;
-                data.run(sql,[interaction.member.id], (err)=> {
+                data.run(sql,[interaction.user.id], (err)=> {
                     if (err) return console.error(err.message);
                     interact.update({content: 'You are now removed!', components: []})
                 })

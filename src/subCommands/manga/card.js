@@ -14,7 +14,7 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
     }
 
     async run(client, interaction) {
-        const authID = interaction.member.id
+        const authID = interaction.user.id
         const name = interaction.options.get('title').value
         // refreshSelect(name)
 

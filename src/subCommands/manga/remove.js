@@ -11,7 +11,7 @@ module.exports = class mangaRemoveSubCommand extends BaseSubcommandExecutor {
     }
 
     run(client, interaction) {
-        const authID = interaction.member.id
+        const authID = interaction.user.id
         const name = interaction.options.get('your_title').value
         sql = `SELECT current FROM userData WHERE userID = ? AND mangaName = ?`;
         data.get(sql,[authID, name], (err, row)=> {

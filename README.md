@@ -11,11 +11,24 @@ Discord bot that uses pupeteer to scrape webpages
 ## How to Use
 1. Download repo
 2. Install all required modules using `npm install`
-3. Fill out tokenSample.json with required info and rename it to token.json
+3. Fill out `tokenSample.json` with required info and rename it to `token.json`
 4. create a `manga.db` file in data folder
 5. Use `node .` in repo folder to start the bot
 
 # **Change Logs**
+
+## Change Log v0.1.9
+- replaced all instances of interaction.member to interaction.user allowing for commands to be run in DMs
+- made category required option in bulk add command
+- Added a 10 minute timeout to feed command
+- added back button to read selection menu of feed command
+- Moved global Command setting to config.json
+- added option in config.json to change update delay (set to 2 hours by default)
+- globalCommands is now false by default
+- changed layout of buttons for feed command
+- added option to change mangaCategory fromfeed command
+- added hold as option to all category options where it was missing before
+- changed puppeteer back to being headless
 
 ## Change Log v0.1.8 (HotFix)
 - change pupeteer back to be headless

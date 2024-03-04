@@ -95,11 +95,13 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
                 .addChoices(
                     { name: 'Reading', value: 'reading' }, 
                     { name: 'Not Reading', value: 'notreading' },
+                    { name: 'Hold', value: 'hold' },
                     { name: 'Hiatus', value: 'hiatus' },
                     { name: 'Finished', value: 'finished' }, 
                     { name: 'In Queue', value: 'inqueue' },
                     { name: 'Other', value: 'other' }
                 )
+                .setRequired(true)
             )
         )
         .addSubcommand((subcommand) => subcommand 
