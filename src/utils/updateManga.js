@@ -89,4 +89,5 @@ function refreshAll() {
 module.exports = {
     refreshSelect,
     refreshAll,
+    updateCategory,
 }

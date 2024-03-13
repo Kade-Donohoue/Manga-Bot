@@ -1,10 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
 const BaseSlashSubCommand = require("../../utils/BaseSlashSubCommand");
-const sqlite3 = require("sqlite3").verbose();
-let sql;
-const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
-    if (err) return console.error(err.message);
-})
 
 module.exports = class MangaSubCommand extends BaseSlashSubCommand {
     constructor() {

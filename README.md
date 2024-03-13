@@ -15,7 +15,33 @@ Discord bot that uses pupeteer to scrape webpages
 4. create a `manga.db` file in data folder
 5. Use `node .` in repo folder to start the bot
 
+# Config
+
+## token.json
+- code: Token of bot. Found under bot section of discord developer portal. You may have to reset token to get it
+- public: Public Key of the discord bot. Can be found under general information of discord developer portal
+- appID: Application ID of the discord bot. Can be found under general information of discord developer portal
+- guildID: ID of your test discord server
+
+## config.json
+- globalCommands: Have commands as global (anywhere the bot is including DMs) or just the provided guildID
+- updateDelay: Delay in miliseconds between updating all manga stored in DB. 
+
 # **Change Logs**
+
+## Change Log v0.1.10
+- added updateCategory to export list of updateManga file
+- added response when changeing the category
+- Please wait message when selecting chapter you read to in feed command now appears before it tries updating
+- Changed feed command timout to 14.5 minutes
+- Removed globalCommands option from token.json
+- Added descriptions for config and token in readme
+- replace manageCard function with mangaCardHandler and feedCardMaker
+- feed card maker creates message content for feed command
+- mangaCardHandler isnt recursize like mangaCard making function easier to understand and overall improved
+- any time a button is pressed the please wait message appears
+- removed unused import os sql from index.js
+- feed command timout now mentions feed command
 
 ## Change Log v0.1.9
 - replaced all instances of interaction.member to interaction.user allowing for commands to be run in DMs

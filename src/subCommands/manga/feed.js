@@ -64,6 +64,11 @@ const catButton = new ButtonBuilder()
     .setLabel('Change Category')
     .setStyle(ButtonStyle.Secondary);
 
+var navigationRow = new ActionRowBuilder()
+    .addComponents(prevButton, linkButton, readButton, nextButton)
+var manageHomeRow = new ActionRowBuilder()
+    .addComponents(cancelButton, catButton)
+
 module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
     constructor(baseCommand, group) {
         super(baseCommand, group, 'feed')
@@ -80,13 +85,13 @@ module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
             if (names.length == 0) return interaction.reply({ content: "You have no Unread manga!", ephemeral: true })
 
             await interaction.deferReply({ ephemeral: true })
-            manageCard(names, nextLinks, nextChap, currentChap, 0, interaction)
-            await delay(10*60*1000)
-            interaction.editReply({ content: "Interaction Timed out please run feed command again to continue!", files: [], components: [], ephemeral: true})
+
+            manageCardHandler(names, nextLinks, nextChap, currentChap, interaction)
+            await delay(14.5*60*1000)
+            interaction.editReply({ content: `Interaction Timed out please run </manga feed:${interaction.commandId}> again to continue! `, files: [], components: [], ephemeral: true})
         })
     }
 }
-
 
 /**
  * Manages providing new cards and handling button presses for feed command
@@ -94,111 +99,120 @@ module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
  * @param nexts: List of Next Chapter URL
  * @param nextChaps: List of Next Chapter Card Text
  * @param currentChaps: List of Current Chapter Card Text
- * @param currentIndex: Vurrent index value of lists
  * @param interaction: interaction to reply to
  * @returns Nothing 
  */
-function manageCard(names, nexts, nextChaps, currentChaps, currentIndex, interaction) {
-    
-    const name = names[currentIndex]
-    const nextURL = nexts[currentIndex]
-    const current = currentChaps[currentIndex]
-    const next = nextChaps[currentIndex]
+async function manageCardHandler(names, nexts, nextChaps, currentChaps, interaction) {
+    var currentIndex = 0
+    var msg = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
+    response = await interaction.editReply(msg)
 
-    sql = `SELECT * FROM mangaData WHERE mangaName = ?`
-    data.get(sql,[name], (err, mangaRow)=> {
-        if (err) console.error(err)
-        if (!mangaRow) return
-        
-        const latest = mangaRow.latestCard
-        const updateTime = mangaRow.updateTime
-        const chaps = mangaRow.list.split(",")
-        generateCard(name.toString(), latest, current, next, (chaps.length + 1).toString() + " Chapters", updateTime).then(async function(data) {
 
-            linkButton.setURL(String(nextURL))
-
-            // const row = new ActionRowBuilder()
-            //     .addComponents(cancelButton, linkButton, readButton, prevButton, nextButton) //groups buttons for message
-
-            const row1 = new ActionRowBuilder()
-                .addComponents(prevButton, linkButton, readButton, nextButton)
-
-            const row2 = new ActionRowBuilder()
-                .addComponents(cancelButton, catButton)
-
-            const attach = new AttachmentBuilder(data, { name: `${name}-card.png`}) //creates discord attachment for message
-            response = await interaction.editReply({ content: "", files: [attach], components: [row1, row2], ephemeral: true}) //send card and buttons to user
-
-            const filter = (i) => i.user.id === interaction.user.id //filters button clicks to only the user that ran the feed command
-            const collector = response.createMessageComponentCollector({
-                ComponentType: ComponentType.Button, 
-                filter: filter,
-                time: 10*60*1000 
-            })
-            collector.on('collect', ( async interact => {
-                if (interact.customId == 'cancel' ) { //sets message to cancelled and stops collector
-                    await interact.update({content: "Cancelled", files: [], components: []})
-                    collector.stop()
-                }
-                if (interact.customId == 'next' ) { //updates card to next card 
-                    if (currentIndex+1 < names.length) {
-                        await interact.update({ content: "Updating Please Wait...", files: [], components: []})
-                        manageCard(names, nexts, nextChaps, currentChaps, currentIndex+1, interaction)
-                    } else  {
-                        
-                        await interact.update({ content: "You are all caught up!!!", files: [], components: []})
-                    }
-                    collector.stop()
-                    
-                }
-                if (interact.customId == 'prev' ) { //updates card to next card 
-                    if (currentIndex+1 < names.length) {
-                        await interact.update({ content: "Updating Please Wait...", files: [], components: []})
-                        manageCard(names, nexts, nextChaps, currentChaps, currentIndex-1, interaction)
-                    } else  {
-                        
-                        await interact.update({ content: "You are all caught up!!!", files: [], components: []})
-                    }
-                    collector.stop()
-                    
-                }
-                if (interact.customId == 'read') { // repllace buttons with dropdown to select current chap(limited to next 25 chaps)
-                    const row = new ActionRowBuilder()
-                    getNextList(nextURL, name).then(async (selectList) => {
-                        mangeReadSelection.setOptions(selectList)
-                        const row = new ActionRowBuilder()
-                            .addComponents(mangeReadSelection)
-                        const row2 = new ActionRowBuilder()
-                            .addComponents(backButton)
-                            await interact.update({ components: [row2,row]})
-                    })
-                }
-                if (interact.customId == 'backPrev') { // returns buttons
-                    await interact.update({ components: [row1, row2]})
-                }
-                if (interact.customId == 'select') { // updates current chap and goes to the next card
-                    getManga.getMangaFull(interact.values[0], false).then(async function(updateData) {
-                        await interact.update({ content: "Updating Please Wait...", files: [], components: []})
-                        if (updateData != -1) getManga.setUpChaps(updateData[0],updateData[1],updateData[2],updateData[3],updateData[4], interaction.user.id, interact.values[0])
-                        if (currentIndex+1 < names.length) {
-                            manageCard(names, nexts, nextChaps, currentChaps, currentIndex+1, interaction)
-                        } else await interact.update({ content: "You are all caught up!!!", files: [], components: []})
-                    })
-                    collector.stop()
-                }
-                if (interact.customId == 'setCat') {
-                    const row = new ActionRowBuilder()
-                        .addComponents(mangeCatSelection)
-                    const row2 = new ActionRowBuilder()
-                        .addComponents(backButton)
-                    await interact.update({ components: [row2,row]})
-                }
-
-                if (interact.customId == 'catSelect') {
-                    updateCategory(interaction.user.id, name.toString(), interact.values[0])
-                }
-            }))
-        })
-        
+    const filter = (i) => i.user.id === interaction.user.id //filters button clicks to only the user that ran the feed command
+    const collector = response.createMessageComponentCollector({
+        ComponentType: ComponentType.Button, 
+        filter: filter,
+        time: 14.5*60*1000 
     })
+    collector.on('collect', ( async interact => {
+        await interact.update({ content: "Updating Please Wait...", components: []})
+
+        if (interact.customId == 'cancel' ) { //sets message to cancelled and stops collector
+            await interact.editReply({content: "Cancelled", files: [], components: []})
+            collector.stop()
+        }
+
+        if (interact.customId == 'next' ) { //updates card to next card 
+            currentIndex += 1
+            if (currentIndex < names.length) {
+                await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
+            } else  {
+                await interact.editReply({ content: "You are all caught up!!!", files: [], components: []})
+            }
+        }
+
+        if (interact.customId == 'prev' ) { //updates card to next card 
+            currentIndex += -1
+            if (currentIndex >= 0) {
+                await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
+            } else  {
+                currentIndex = 0
+                await interact.editReply({ content: "Nothing Before this one!", components: [navigationRow, manageHomeRow]})
+            }    
+        }
+
+        if (interact.customId == 'read') { // repllace buttons with dropdown to select current chap(limited to next 25 chaps)
+            getNextList(nextChaps[currentIndex], names[currentIndex]).then(async (selectList) => {
+                mangeReadSelection.setOptions(selectList)
+                const row = new ActionRowBuilder()
+                    .addComponents(mangeReadSelection)
+                const row2 = new ActionRowBuilder()
+                    .addComponents(backButton)
+                    await interact.editReply({ components: [row2,row]})
+            })
+        }
+
+        if (interact.customId == 'backPrev') { // returns buttons
+            await interact.editReply({ components: [navigationRow, manageHomeRow] })
+        }
+
+        if (interact.customId == 'select') { // updates current chap and goes to the next card
+            currentIndex+=1
+            if (currentIndex < names.length) {
+                await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
+            } else await interact.editReply({ content: "You are all caught up!!!", files: [], components: []})
+
+            getManga.getMangaFull(interact.values[0], false).then(async function(updateData) {
+                if (updateData != -1) getManga.setUpChaps(updateData[0],updateData[1],updateData[2],updateData[3],updateData[4], interaction.user.id, interact.values[0])
+            })
+        }
+
+        if (interact.customId == 'setCat') { // brings up buttons to allow user to change category
+            const catRow = new ActionRowBuilder()
+                .addComponents(mangeCatSelection)
+            const manageRow = new ActionRowBuilder()
+                .addComponents(backButton)
+            await interact.editReply({ components: [manageRow,catRow]})
+        }
+
+        if (interact.customId == 'catSelect') { // changes category of manga based on user selection
+            updateCategory(interaction.user.id, names[currentIndex].toString(), interact.values[0])
+            await interact.editReply({ components: [navigationRow, manageHomeRow]  })
+        }
+    }))
+
+
+    /**
+     * Provides dictionary for discord message contioning both a card and its buttons
+     * @param name: Name of the Manga
+     * @param nextURL: URL of the next chapter
+     * @param currentText: Text to put as current chapter on card
+     * @param nextText: Text to put as next chapter on card
+     * @returns dictionary with the keys content with its value as an empty string, files and its data is a card image, components, containing main buttons, and ephemeral set to true 
+     */
+    async function feedCardMaker(name, nextURL, currentText, nextText) {
+
+        sql = `SELECT * FROM mangaData WHERE mangaName = ?`
+        const mangaRow = await new Promise((resolve, reject) => {
+            data.get(sql, [name], (err, mangaRow) => {
+                if (err) console.error(err)
+                if (!mangaRow) resolve(-1)
+                resolve(mangaRow)
+            })
+        })
+
+        const latestText = mangaRow.latestCard
+        const updateTime = mangaRow.updateTime
+        const chapsList = mangaRow.list.split(",")
+
+        const cardData = await generateCard(name.toString(), latestText, currentText, nextText, (chapsList.length + 1).toString() + " Chapters", updateTime)
+        const attach = new AttachmentBuilder(cardData, { name: `${name}-card.png`})
+
+        linkButton.setURL(String(nextURL))
+
+        navigationRow.setComponents(prevButton, linkButton, readButton, nextButton)
+        manageHomeRow.setComponents(cancelButton, catButton)
+
+        return { content: "", files: [attach], components: [navigationRow, manageHomeRow], ephemeral: true }
+    }
 }
