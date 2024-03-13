@@ -6,6 +6,7 @@ const { getUnread, getNextList }  = require('../../../src/utils/getAllUnread')
 const getManga = require("../../utils/puppeteer/manganato/getManga")
 const { executablePath } = require("puppeteer")
 const { updateCategory }  = require('../../utils/updateManga')
+const userDataUtils = require('../../utils/userDataUtils')
 
 const delay = ms => new Promise(res => setTimeout(res, ms))
 let sql
@@ -76,12 +77,11 @@ module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
 
     async run(client, interaction) {
         const authID = interaction.user.id
-        var userCat = null
-        try {
-            userCat = interaction.options.get('category').value
-        } catch{}
+        const userCat = interaction.options.getString('category') ?? '%'
+        const sortMethod = interaction.options.getString('sort-method') ?? 'interactTime'
+        const sortOrd = interaction.options.getString('sort-order') ?? 'ASC'
 
-        getUnread(authID, userCat).then(async ([names, nextLinks, nextChap, currentChap]) => {
+        getUnread(authID, userCat, sortMethod, sortOrd).then(async ([names, nextLinks, nextChap, currentChap]) => {
             if (names.length == 0) return interaction.reply({ content: "You have no Unread manga!", ephemeral: true })
 
             await interaction.deferReply({ ephemeral: true })
@@ -106,6 +106,7 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
     var currentIndex = 0
     var msg = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
     response = await interaction.editReply(msg)
+    userDataUtils.userInteractTime(interaction.user.id, names[currentIndex])
 
 
     const filter = (i) => i.user.id === interaction.user.id //filters button clicks to only the user that ran the feed command
@@ -126,6 +127,7 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
             currentIndex += 1
             if (currentIndex < names.length) {
                 await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
+                userDataUtils.userInteractTime(interaction.user.id, names[currentIndex])
             } else  {
                 await interact.editReply({ content: "You are all caught up!!!", files: [], components: []})
             }
@@ -135,6 +137,7 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
             currentIndex += -1
             if (currentIndex >= 0) {
                 await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
+                userDataUtils.userInteractTime(interaction.user.id, names[currentIndex])
             } else  {
                 currentIndex = 0
                 await interact.editReply({ content: "Nothing Before this one!", components: [navigationRow, manageHomeRow]})
@@ -212,6 +215,7 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
 
         navigationRow.setComponents(prevButton, linkButton, readButton, nextButton)
         manageHomeRow.setComponents(cancelButton, catButton)
+
 
         return { content: "", files: [attach], components: [navigationRow, manageHomeRow], ephemeral: true }
     }

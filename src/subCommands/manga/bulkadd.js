@@ -10,7 +10,7 @@ module.exports = class mangaBulkAddSubCommand extends BaseSubcommandExecutor {
     async run(client, interaction) {
         const authID = interaction.user.id
         const URLS = interaction.options.get('manga_url').value.split(",")
-        const userCat = interaction.options.get('category').value
+        const userCat = interaction.options.getString('category') ?? 'unsorted'
         await interaction.reply({ content : 'This will take a minute please wait...', ephemeral: true  })
         loop(0)
 

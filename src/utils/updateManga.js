@@ -46,7 +46,7 @@ async function updateChaps(chaps, name, latestTitle) {
  * @param {string} mangaName: Name of the manga
  * @param {string} cat: category to put manga in
  */
-async function updateCategory(userID, mangaName, cat) {
+async function updateCategory(userID, mangaName, cat = 'unsorted') {
     sql = 'Update userData SET userCat = ? WHERE mangaName = ? AND userID = ?'
     data.run(sql, [cat, mangaName, userID], (err) => {
         if (err) return console.error(err.message)

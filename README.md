@@ -29,6 +29,17 @@ Discord bot that uses pupeteer to scrape webpages
 
 # **Change Logs**
 
+## Change Log v0.1.11
+- Added interactionTime to userData tabel
+- options.get('category) have been replaced with getString and a default value of unsorted was added
+- card, current, feed, next, and getManga update interactionTime to current time
+- created userDataUtils which currently has function for updating interaction time
+- updateCategory now has default category set as unsorted
+- setUpChaps default category is now unsorted
+- using LIKE with wildcards in sql statement instead of a if else tree simplifying code
+- added sortMethod for feed command allowing user to select between sorting by name or interaction time (default is interaction time)
+- added sortOrder for feed command allowing user to select between sorting from ascending and descending order
+
 ## Change Log v0.1.10
 - added updateCategory to export list of updateManga file
 - added response when changeing the category

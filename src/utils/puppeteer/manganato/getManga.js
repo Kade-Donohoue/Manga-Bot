@@ -126,7 +126,7 @@ const delay = ms => new Promise(res => setTimeout(res, ms))
  * @param userCat: Category user added manga to
  * @returns nothing but saves data to manga.db
  */
-function setUpChaps(chaps, name, currentTitle, nextTitle , latestTitle, authID, URL, userCat){
+function setUpChaps(chaps, name, currentTitle, nextTitle , latestTitle, authID, URL, userCat = 'unsorted'){
     if (!nextTitle) nextTitle = latestTitle
     // console.log("name : ")
     // console.log(name)
@@ -166,15 +166,15 @@ function setUpChaps(chaps, name, currentTitle, nextTitle , latestTitle, authID, 
         if (!row) {
             // console.log("Importing to User List")
             // interaction.followUp({content: 'Manga Added To Your List',ephemeral: true})
-            sql = `INSERT INTO userData (current, userID, mangaName, currentCard, nextCard, userCat) VALUES(?,?,?,?,?,?)`
-            data.run(sql,[URL,authID,name,currentTitle,nextTitle,userCat],(err)=>{
+            sql = `INSERT INTO userData (current, userID, mangaName, currentCard, nextCard, userCat, interactTime) VALUES(?,?,?,?,?,?,?)`
+            data.run(sql,[URL,authID,name,currentTitle,nextTitle,userCat, Date.now()],(err)=>{
                 if (err) return console.error(err.message);
             })
         } else {
             // console.log('updating User List')
             // interaction.followUp({content: 'Manga Already On Your List',ephemeral: true})
-            sql = `UPDATE userData SET current = ?, currentCard = ?, nextCard = ?, userCat = ? WHERE userID = ? AND mangaName = ?`
-            data.run(sql,[URL,currentTitle,nextTitle,userCat,authID,name],(err)=>{
+            sql = `UPDATE userData SET current = ?, currentCard = ?, nextCard = ?, userCat = ?, interactTime = ? WHERE userID = ? AND mangaName = ?`
+            data.run(sql,[URL,currentTitle,nextTitle,userCat,Date.now(),authID,name],(err)=>{
                 if (err) return console.error(err.message);
             })
         }

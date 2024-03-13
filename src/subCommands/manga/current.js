@@ -1,5 +1,6 @@
 const BaseSubcommandExecutor = require("../../utils/BaseSubCommandExecutor");
 const sqlite3 = require("sqlite3").verbose();
+const userDataUtils = require('../../../src/utils/userDataUtils')
 let sql;
 const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
     if (err) return console.error(err.message);
@@ -27,6 +28,7 @@ module.exports = class mangaCurrentSubCommand extends BaseSubcommandExecutor {
             }
             
         })
+        userDataUtils.userInteractTime(authID, name)
     
 
     }

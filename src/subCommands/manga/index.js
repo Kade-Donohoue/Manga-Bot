@@ -130,6 +130,24 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
                     { name: 'Other', value: 'other' }
                 )
             )
+            .addStringOption((option) => option 
+                .setName('sort-order')
+                .setDescription('Select Order to sort by')
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Ascending', value: 'ASC' }, 
+                    { name: 'descending', value: 'DESC' }
+                )
+            )
+            .addStringOption((option) => option 
+                .setName('sort-method')
+                .setDescription('Select How to sort Manga')
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Alphabetical', value: 'ASC' }, 
+                    { name: 'Time', value: 'DESC' }
+                )
+            )
         )
         .addSubcommand((subcommand) => subcommand 
             .setName('forgetme')

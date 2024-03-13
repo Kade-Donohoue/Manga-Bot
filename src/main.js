@@ -28,7 +28,7 @@ const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>
     if (err) return console.error(err.message);
 })
 //Create Databases if not exist
-sql = `CREATE TABLE IF NOT EXISTS userData (userID,mangaName,current,currentCard,nextCard,userCat)`
+sql = `CREATE TABLE IF NOT EXISTS userData (userID,mangaName,current,currentCard,nextCard,userCat, interactTime)`
 data.run(sql)
 
 sql = `CREATE TABLE IF NOT EXISTS mangaData (mangaName,list,newest,latestCard,updateTime)`

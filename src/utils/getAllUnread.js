@@ -10,7 +10,7 @@ const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>
  * @param userCat: Category to get Manga From, provide nothing to get list from all Categorys
  * @returns 2d array. 0th index has array of names, 1st index has array of next Links, 2nd has Array of Text of the Next chapters, 3rd has array of text of current chapters 
  */
-async function getUnread(authID, userCat = null) {
+async function getUnread(authID, userCat = '%', sortMethod = 'mangaName', sortOrd = 'ASC') {
     const info = []
     const names = []
     const nextLinks = []
@@ -18,24 +18,14 @@ async function getUnread(authID, userCat = null) {
     const currentChap = []
 
     try {
-        var userData
-        if (userCat) {
-            userData = await new Promise((resolve, reject) => {
-                const sql = `SELECT * FROM userData WHERE userID = ? AND userCat = ?`;
-                data.all(sql, [authID,userCat], (err, rows) => {
-                    if (err) reject(err);
-                    else resolve(rows);
-                });
+        const userData = await new Promise((resolve, reject) => {
+            const sql = `SELECT * FROM userData WHERE userID = ? AND userCat LIKE ? ORDER BY ${sortMethod} ${sortOrd}`;
+            data.all(sql, [authID,userCat], (err, rows) => {
+                if (err) console.log(err);
+                else resolve(rows);
             });
-        } else {
-            userData = await new Promise((resolve, reject) => {
-                const sql = `SELECT * FROM userData WHERE userID = ?`;
-                data.all(sql, [authID], (err, rows) => {
-                    if (err) reject(err);
-                    else resolve(rows);
-                });
-            });
-        }
+        });
+
 
         // console.log("userData:", userData);
 

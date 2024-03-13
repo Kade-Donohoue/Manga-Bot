@@ -9,7 +9,7 @@ module.exports = class mangaAddSubCommand extends BaseSubcommandExecutor {
     async run(client, interaction) {
         const authID = interaction.user.id
         const URL = interaction.options.get('manga_url').value
-        const userCat = interaction.options.get('category').value
+        const userCat = interaction.options.getString('category') ?? 'unsorted'
         await interaction.deferReply({ephemeral: true})
         if (!URL.includes("http")) return interaction.editReply({content: "Invalid URL"})
         if (URL.includes('chapmang')) return getManga.getMangaFull(URL).then(function(data) {
