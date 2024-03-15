@@ -1,18 +1,10 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder, ComponentType, StringSelectMenuBuilder  } = require("discord.js")
 const BaseSubcommandExecutor = require("../../../src/utils/BaseSubCommandExecutor")
-const sqlite3 = require("sqlite3").verbose()
 const { generateCard }  = require('../../../src/utils/cardGenerator')
-const { getUnread, getNextList }  = require('../../../src/utils/getAllUnread')
+const { getUnread }  = require('../../../src/utils/getAllUnread')
 const getManga = require("../../utils/puppeteer/manganato/getManga")
-const { executablePath } = require("puppeteer")
 const { updateCategory }  = require('../../utils/updateManga')
-const userDataUtils = require('../../utils/userDataUtils')
-
-const delay = ms => new Promise(res => setTimeout(res, ms))
-let sql
-const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
-    if (err) return console.error(err.message);
-})
+const dataUtils = require('../../utils/dataUtils')
 
 const cancelButton = new ButtonBuilder()
     .setCustomId("cancel")
@@ -87,8 +79,8 @@ module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
             await interaction.deferReply({ ephemeral: true })
 
             manageCardHandler(names, nextLinks, nextChap, currentChap, interaction)
-            await delay(14.5*60*1000)
-            interaction.editReply({ content: `Interaction Timed out please run </manga feed:${interaction.commandId}> again to continue! `, files: [], components: [], ephemeral: true})
+            // await delay(14.5*60*1000)
+            // interaction.editReply({ content: `Interaction Timed out please run </manga feed:${interaction.commandId}> again to continue! `, files: [], components: [], ephemeral: true})
         })
     }
 }
@@ -106,7 +98,6 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
     var currentIndex = 0
     var msg = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
     response = await interaction.editReply(msg)
-    userDataUtils.userInteractTime(interaction.user.id, names[currentIndex])
 
 
     const filter = (i) => i.user.id === interaction.user.id //filters button clicks to only the user that ran the feed command
@@ -124,10 +115,10 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
         }
 
         if (interact.customId == 'next' ) { //updates card to next card 
+            dataUtils.userInteractTime(interaction.user.id, names[currentIndex])
             currentIndex += 1
             if (currentIndex < names.length) {
                 await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
-                userDataUtils.userInteractTime(interaction.user.id, names[currentIndex])
             } else  {
                 await interact.editReply({ content: "You are all caught up!!!", files: [], components: []})
             }
@@ -137,7 +128,7 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
             currentIndex += -1
             if (currentIndex >= 0) {
                 await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
-                userDataUtils.userInteractTime(interaction.user.id, names[currentIndex])
+                // dataUtils.userInteractTime(interaction.user.id, names[currentIndex])
             } else  {
                 currentIndex = 0
                 await interact.editReply({ content: "Nothing Before this one!", components: [navigationRow, manageHomeRow]})
@@ -145,18 +136,18 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
         }
 
         if (interact.customId == 'read') { // repllace buttons with dropdown to select current chap(limited to next 25 chaps)
-            getNextList(nextChaps[currentIndex], names[currentIndex]).then(async (selectList) => {
-                mangeReadSelection.setOptions(selectList)
-                const row = new ActionRowBuilder()
-                    .addComponents(mangeReadSelection)
-                const row2 = new ActionRowBuilder()
-                    .addComponents(backButton)
-                    await interact.editReply({ components: [row2,row]})
-            })
+            const nextList = await dataUtils.getNextList(nexts[currentIndex], names[currentIndex], 25)
+            mangeReadSelection.setOptions(nextList)
+            const row = new ActionRowBuilder()
+                .addComponents(mangeReadSelection)
+            const row2 = new ActionRowBuilder()
+                .addComponents(backButton)
+                await interact.editReply({ components: [row2,row]})
         }
 
         if (interact.customId == 'backPrev') { // returns buttons
-            await interact.editReply({ components: [navigationRow, manageHomeRow] })
+            const cardMessage = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
+            await interact.editReply({ components: cardMessage.components })
         }
 
         if (interact.customId == 'select') { // updates current chap and goes to the next card
@@ -184,8 +175,12 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
         }
     }))
 
+    collector.on('end', ( async () => {
+        interaction.editReply({ content: `Interaction Timed out please run </manga feed:${interaction.commandId}> again to continue! `, files: [], components: [], ephemeral: true})
+    }))
+}
 
-    /**
+/**
      * Provides dictionary for discord message contioning both a card and its buttons
      * @param name: Name of the Manga
      * @param nextURL: URL of the next chapter
@@ -193,30 +188,18 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
      * @param nextText: Text to put as next chapter on card
      * @returns dictionary with the keys content with its value as an empty string, files and its data is a card image, components, containing main buttons, and ephemeral set to true 
      */
-    async function feedCardMaker(name, nextURL, currentText, nextText) {
+async function feedCardMaker(name, nextURL, currentText, nextText) {
 
-        sql = `SELECT * FROM mangaData WHERE mangaName = ?`
-        const mangaRow = await new Promise((resolve, reject) => {
-            data.get(sql, [name], (err, mangaRow) => {
-                if (err) console.error(err)
-                if (!mangaRow) resolve(-1)
-                resolve(mangaRow)
-            })
-        })
+    const mangaRow = await dataUtils.getMangaRow(name)
 
-        const latestText = mangaRow.latestCard
-        const updateTime = mangaRow.updateTime
-        const chapsList = mangaRow.list.split(",")
+    const cardData = await generateCard(name.toString(), mangaRow.latestCard, currentText, nextText, (mangaRow.list.split(",").length + 1).toString() + " Chapters", mangaRow.updateTime)
+    const attach = new AttachmentBuilder(cardData, { name: `${name}-card.png`})
 
-        const cardData = await generateCard(name.toString(), latestText, currentText, nextText, (chapsList.length + 1).toString() + " Chapters", updateTime)
-        const attach = new AttachmentBuilder(cardData, { name: `${name}-card.png`})
+    linkButton.setURL(String(nextURL))
 
-        linkButton.setURL(String(nextURL))
-
-        navigationRow.setComponents(prevButton, linkButton, readButton, nextButton)
-        manageHomeRow.setComponents(cancelButton, catButton)
+    navigationRow.setComponents(prevButton, linkButton, readButton, nextButton)
+    manageHomeRow.setComponents(cancelButton, catButton)
 
 
-        return { content: "", files: [attach], components: [navigationRow, manageHomeRow], ephemeral: true }
-    }
+    return { content: "", files: [attach], components: [navigationRow, manageHomeRow], ephemeral: true }
 }

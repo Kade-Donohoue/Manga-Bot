@@ -13,8 +13,12 @@ module.exports = class mangaAddSubCommand extends BaseSubcommandExecutor {
         await interaction.deferReply({ephemeral: true})
         if (!URL.includes("http")) return interaction.editReply({content: "Invalid URL"})
         if (URL.includes('chapmang')) return getManga.getMangaFull(URL).then(function(data) {
-            if (data != -1) getManga.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)
-            interaction.editReply({content: "Added to your list"})
+            if (data != -1) {
+                getManga.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)
+                interaction.editReply({content: "Added to your list"})
+            } else {
+                interaction.editReply({content: 'An internal system error has occured. Please try again or contact the admin'})
+            }
         })
         // if (URL.includes('asura')) asura()
         // if (URL.includes('reaperscan')) reaperMang()

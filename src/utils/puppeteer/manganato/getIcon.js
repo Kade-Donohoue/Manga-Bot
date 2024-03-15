@@ -53,7 +53,7 @@ async function getMangaIcon(url, title) {
         })
         // console.log(icon.buffer())
         await browser.close()
-        console.log("Icon Save Success at " + "data/icons/"+title.replace(/[^a-zA-Z]+/g, "")+".png")
+        // console.log("Icon Save Success at " + "data/icons/"+title.replace(/[^a-zA-Z]+/g, "")+".png")
         return 1
         
     } catch {

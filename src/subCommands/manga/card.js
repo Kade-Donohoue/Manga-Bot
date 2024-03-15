@@ -2,7 +2,7 @@ const { AttachmentBuilder } = require("discord.js");
 const BaseSubcommandExecutor = require("../../utils/BaseSubCommandExecutor");
 const sqlite3 = require("sqlite3").verbose();
 const { generateCard }  = require('../../../src/utils/cardGenerator')
-const userDataUtils = require('../../../src/utils/userDataUtils')
+const dataUtils = require('../../../src/utils/dataUtils')
 let sql;
 const { refreshSelect }  = require('../../utils/updateManga')
 const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>{
@@ -40,7 +40,7 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
                 generateCard(name.toString(), latest, current, next, (chaps.length + 1).toString() + " Chapters", updateTime).then(function(data) {
                     const attach = new AttachmentBuilder(data, { name: `${name}-card.png`})
                     interaction.editReply({ content: "", files: [attach], ephemeral: true})
-                    userDataUtils.userInteractTime(authID, name)
+                    dataUtils.userInteractTime(authID, name)
                 })
             })
         })

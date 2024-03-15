@@ -62,9 +62,8 @@ async function getMangaFull(url, icon = true) {
             a => a.getAttribute('data-c')
         ))
 
-        var chapTitles = await page.$eval('body > div.body-site > div:nth-child(1) > div.panel-navigation > select', node => node.value)
-        chapTitles = chapTitles.split(':')
-        currentTitle = chapTitles[0]
+        var chapTitles = url.split('/')
+        const currentTitle = (chapTitles[chapTitles.length-1].replace("-", " "))
 
         try {
             const nextButton = await page.waitForSelector('body > div.body-site > div:nth-child(1) > div.panel-navigation > div > a.navi-change-chapter-btn-next.a-h', 
@@ -95,11 +94,9 @@ async function getMangaFull(url, icon = true) {
         })
         let mangaName = await titleSelect.evaluate(el => el.innerText)
         if (mangaName.length > 50) mangaName = mangaName.toString().slice(0,49)+'...'
-        // await delay(300000)
         await browser.close()
         if (icon) await getIcon.getMangaIcon(mangaURL, mangaName)
 
-        // console.log(chapterList)
         var tmp = chapterList.slice(-1)
         tmp = tmp[0].split('/').slice(-1)[0]
         latestChapter = tmp.replace("-", " ")
@@ -112,7 +109,6 @@ async function getMangaFull(url, icon = true) {
         return -1
     }
 }
-const delay = ms => new Promise(res => setTimeout(res, ms))
 
 /**
  * Saves data to manga.db

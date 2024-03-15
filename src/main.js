@@ -119,13 +119,19 @@ async function main() {
             await rest.put(Routes.applicationCommands(token.appID), {
                 body: [/*...slashCommandsJson, */...slashSubCommandsJson],
             })
+            await rest.put(Routes.applicationGuildCommands(token.appID, token.guildID), {
+                body: [],
+            })
         } else {
             console.log("Registering Guild Commands")
             await rest.put(Routes.applicationGuildCommands(token.appID, token.guildID), {
                 body: [/*...slashCommandsJson, */...slashSubCommandsJson],
             })
+            await rest.put(Routes.applicationCommands(token.appID), {
+                body: [],
+            })
         }
-        console.log('Slash Commands Refreshed')
+        console.log('Slash Commands Registered')
         await client.login(token.code)
     }catch (err) {console.log(err)}
 }

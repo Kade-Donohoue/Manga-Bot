@@ -29,6 +29,22 @@ Discord bot that uses pupeteer to scrape webpages
 
 # **Change Logs**
 
+## Change Log v0.1.12
+- feed command now updates interact time when you click next button to leave current manga instead of when the current one is loaded
+- feed command doesnt update interact time when you press back anymore
+- moved feedCardMaker outside of mangaCardHandler
+- renamed userDataUtils over to dataUtils to better reflect its intended purpose
+- fixxed feed command mark as read only giving latest chapter as option
+- when registering slash commands it will also set global or guild commands to blank depending on config
+- instead of using delay function collectors timout is used and when it ends it changed interaction to reflect as such
+- feedCardMaker now directly uses dictionary values instead of assigning them to consts
+- moved getNextList command into dataUtils file
+- resolved link button opening wrong link when another person used food command as you were looking at the a card
+- added a message when a error occurs when using add command
+- changed how current Chapter text for cards is abtained (splices URL instead of pulling from dropdown) as on ocasion it would get the text incorrect
+- commented out success saving icon log
+- changed wording of confirmation of slash commands being registered
+
 ## Change Log v0.1.11
 - Added interactionTime to userData tabel
 - options.get('category) have been replaced with getString and a default value of unsorted was added

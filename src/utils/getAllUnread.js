@@ -68,47 +68,7 @@ async function getUnread(authID, userCat = '%', sortMethod = 'mangaName', sortOr
     }
 }
 
-
-/**
- * Gets list of chapter card text and the URL of next chapters 
- * @param {String} currentURL: Link for the current chapter the user is on
- * @param {String} mangaName: Name of the manga
- * @returns array of dictionaries contioning the keys label and value 
- */
-async function getNextList(currentURL, mangaName) {
-    const info = []
-        
-    const mangaInfo = await new Promise((resolve, reject) => {
-        const sql = `SELECT * FROM mangaData WHERE mangaName = ?`
-        data.get(sql, [mangaName], (err, mangaInfo) => {
-            if (err) reject(err)
-            else resolve(mangaInfo)
-        })
-    })
-
-    if (!mangaInfo) {
-        console.log("no manga info")
-        return null
-    }
-
-    var chaps = mangaInfo.list.split(',')
-
-    chaps = chaps.slice(chaps.indexOf(currentURL), chaps.length)
-
-    for (const chapURL of chaps) {
-        var chap = chapURL.split('/')
-        chap = (chap[chap.length-1].replace("-", " "))
-
-        info.push({"label": chap, "value": chapURL})
-    }
-
-    const trimmedUnread = info.slice(0,25)
-    return trimmedUnread
-    
-}
-
 module.exports = {
-    getUnread, 
-    getNextList
+    getUnread
 };    
 
