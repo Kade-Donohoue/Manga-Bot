@@ -11,6 +11,8 @@ const sqlite3 = require("sqlite3").verbose()
 
 const { refreshAll }  = require('./utils/updateManga')
 const {registerCommands, registerSubCommands} = require('./utils/registry')
+const { getMangaFull } = require('./utils/puppeteer/manganato/getManga')
+const reaper = require('./utils/puppeteer/reaper/getManga')
 
 const fuseOptions = {
     isCaseSensitive: false,
@@ -38,7 +40,7 @@ setInterval(refreshAll, config.updateDelay) // Check all Manga Every 2 hours
 
 client.on('ready', () => { 
     console.log(client.user.tag + ' Has logged in')
-    refreshAll()
+    if (config.updateAtStart) refreshAll()
 })
 
 client.on('interactionCreate', (interaction) => {

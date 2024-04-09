@@ -1,5 +1,6 @@
 const BaseSubcommandExecutor = require("../../utils/BaseSubCommandExecutor")
-const getManga = require("../../utils/puppeteer/manganato/getManga")
+const manganato = require("../../utils/puppeteer/manganato/getManga")
+const reaper = require("../../utils/puppeteer/reaper/getManga")
 
 module.exports = class mangaAddSubCommand extends BaseSubcommandExecutor {
     constructor(baseCommand, group) {
@@ -12,16 +13,27 @@ module.exports = class mangaAddSubCommand extends BaseSubcommandExecutor {
         const userCat = interaction.options.getString('category') ?? 'unsorted'
         await interaction.deferReply({ephemeral: true})
         if (!URL.includes("http")) return interaction.editReply({content: "Invalid URL"})
-        if (URL.includes('chapmang')) return getManga.getMangaFull(URL).then(function(data) {
-            if (data != -1) {
-                getManga.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)
-                interaction.editReply({content: "Added to your list"})
-            } else {
+        if (URL.includes('chapmang')) return manganato.getMangaFull(URL).then(function(data) {
+            if (data == -1) {
                 interaction.editReply({content: 'An internal system error has occured. Please try again or contact the admin'})
+            } else if (data == -2) {
+                interaction.editReply({content: 'ChapManganato has been disabled. If you think this is a mistake please contact the admin'})
+            } else {
+                manganato.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)
+                interaction.editReply({content: "Added to your list"})
             }
         })
         // if (URL.includes('asura')) asura()
-        // if (URL.includes('reaperscan')) reaperMang()
+        if (URL.includes('reaperscans')) return reaper.getMangaFull(URL).then(function(data) {
+            if (data == -1) { 
+                interaction.editReply({content: 'An internal system error has occured. Please try again or contact the admin'})
+            } else if (data == -2) {
+                interaction.editReply({content: 'Reaper Scans has been disabled. If you think this is a mistake please contact the admin'})
+            } else {
+                reaper.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)
+                interaction.editReply({content: "Added to your list"})
+            }
+        })
 
         interaction.editReply({content: "Invalid URL"})
     }

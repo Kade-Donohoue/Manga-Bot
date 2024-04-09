@@ -101,36 +101,8 @@ async function generateUserStatCard(userName, mangaRead, chaptersRead, mangaUnre
     context.textAlign = "left"
     context.font = applyText(canvas, updateTime, 600);
     context.fillText(updateTime, 100, 1365);
-
-
-
-    // const x = 890
-    // const y = 230
-    // const radius = 30
-    // const width = 655
-    // const height = 950
-    // context.strokeStyle = "red";
-    // context.beginPath()
-    // context.moveTo(x + radius, y)
-    // context.lineTo(x + width - radius, y)
-    // context.quadraticCurveTo(x + width, y, x + width, y + radius)
-    // context.lineTo(x + width, y + height - radius)
-    // context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height)
-    // context.lineTo(x + radius, y + height)
-    // context.quadraticCurveTo(x, y + height, x, y + height - radius)
-    // context.lineTo(x, y + radius)
-    // context.quadraticCurveTo(x, y, x + radius, y)
-    // context.closePath()
-    // context.clip()
-    
-    // const banner = await Canvas.loadImage('data/icons/'+name.replace(/[^a-zA-Z]+/g, "")+'.png')
-    // context.drawImage(banner, x, y, width, height)
-    // context.restore()
-    // const attachment = new AttachmentBuilder(await canvas.toBuffer('image/png'), { name: `${name}-card.png`})
     
     return canvas.toBuffer('image/png')
-    // return attachment
-    // interaction.reply({ files: [attachment], ephemeral: true })
 }
 
 

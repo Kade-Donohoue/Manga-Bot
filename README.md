@@ -1,47 +1,65 @@
 # **Manga Bot**
 ## Description
-Discord bot that uses pupeteer to scrape webpages
+Discord bot that uses Puppeteer to scrape web pages. 
 
 ## Requirements
 - node JS 20.11.0
 - npm 10.2.4
-- an application created in the discord developer portal
+- an application created in the Discord developer portal
 
 
 ## How to Use
 1. Download repo
 2. Install all required modules using `npm install`
-3. Fill out `tokenSample.json` with required info and rename it to `token.json`
-4. create a `manga.db` file in data folder
-5. Use `node .` in repo folder to start the bot
+3. Fill out `tokenSample.json` with the required info and rename it to `token.json`
+4. Create a `manga.db` file in the data folder
+5. Use `node .` in the repo folder to start the bot
 
 # Config
 
 ## token.json
 - code: Token of bot. Found under bot section of discord developer portal. You may have to reset token to get it
-- public: Public Key of the discord bot. Can be found under general information of discord developer portal
-- appID: Application ID of the discord bot. Can be found under general information of discord developer portal
+- public: Public Key of the discord bot. Can be found under general information of Discord developer portal
+- appID: Application ID of the discord bot. Can be found under general information of Discord developer portal
 - guildID: ID of your test discord server
 
 ## config.json
 - globalCommands: Have commands as global (anywhere the bot is including DMs) or just the provided guildID
-- updateDelay: Delay in miliseconds between updating all manga stored in DB. 
+- updateDelay: Delay in milliseconds between updating all manga stored in DB
+- updateAtStart: whether or not all manga should be updated when started
+- allowManganatoScans: Enable or disable the ability to add or update Manganato
+- allowReaperScans: Enable or disable the ability to add or update Reaper Scans
 
 # **Change Logs**
 
+## Change Log v0.1.13
+- feed command no longer sets the category of manga to unsorted when updating the chapter
+- added option in config.js to enable/disable updating all manga when the bot starts
+- added support for Reaper Scans
+- fixed issue where cards would display 1 extra chapter then there was
+- removed commented-out code in generateUserStatCard that served no purpose
+- changed how getNextList created the labels so it works with both Reaper and Manganato
+- changed getNextList value to just be last part of URL instead of full url. This reduces chance af 100 char limit being reached for the value
+- fixed some spelling throughout changelogs
+- feed command will now send the user an error message when saving the updated chapter fails
+- bulkadd loop has been rebuilt to not be recursive
+- more accurate errors for bulkadd have been added
+- option in config.js has been added to disable Reaper Scans
+- option in config.js has been added to disable ChapManganato
+
 ## Change Log v0.1.12
-- feed command now updates interact time when you click next button to leave current manga instead of when the current one is loaded
-- feed command doesnt update interact time when you press back anymore
+- feed command now updates interact time when you click the next button to leave the current manga instead of when the current one is loaded
+- feed command doesn't update interact time when you press back anymore
 - moved feedCardMaker outside of mangaCardHandler
 - renamed userDataUtils over to dataUtils to better reflect its intended purpose
-- fixxed feed command mark as read only giving latest chapter as option
-- when registering slash commands it will also set global or guild commands to blank depending on config
-- instead of using delay function collectors timout is used and when it ends it changed interaction to reflect as such
+- fixed feed command mark as read-only giving the latest chapter as an option
+- when registering slash commands it will also set global or guild commands to blank depending on the config
+- instead of using a delay function collectors timeout is used and when it ends it changes interaction to reflect as such
 - feedCardMaker now directly uses dictionary values instead of assigning them to consts
 - moved getNextList command into dataUtils file
-- resolved link button opening wrong link when another person used food command as you were looking at the a card
-- added a message when a error occurs when using add command
-- changed how current Chapter text for cards is abtained (splices URL instead of pulling from dropdown) as on ocasion it would get the text incorrect
+- resolved link button opening the wrong link when another person used the feed command as you were looking at a card
+- added a message when an error occurs when using the add command
+- changed how current Chapter text for cards is obtained (splices URL instead of pulling from dropdown) as on occasion it would get the text incorrect
 - commented out success saving icon log
 - changed wording of confirmation of slash commands being registered
 

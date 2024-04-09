@@ -4,7 +4,8 @@ const stealthPlugin = require("puppeteer-extra-plugin-stealth")
 puppeteer.use(stealthPlugin())
 const fs = require('fs')
 const wildcardMatch = require('wildcard-match');
-const getManga = require("./puppeteer/manganato/getManga.js")
+const manganato = require("./puppeteer/manganato/getManga.js")
+const reaper = require("./puppeteer/reaper/getManga.js")
 
 const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker')
 const { request } = require("http")
@@ -62,10 +63,16 @@ async function refreshSelect(mangaName, full = true) {
             currentURL = row.newest
 
             if (!currentURL.includes("http")) return
-            if (currentURL.includes('chapmang')) await getManga.getMangaFull(currentURL, full).then((data) => {
+            if (currentURL.includes('chapmang')) await manganato.getMangaFull(currentURL, full).then((data) => {
                 if (data == -1) return
+                if (data == -2) return console.warn('MangaNato was disabled by config but the database contains reaperscans links!!')
                 updateChaps(data[0], data[1], data[4])
-        })
+            })
+            if (currentURL.includes('reaperscan')) await reaper.getMangaFull(currentURL, full).then((data) => {
+                if (data == -1) return
+                if (data == -2) return console.warn('Reaperscans was disabled by config but the database contains reaperscans links!!')
+                updateChaps(data[0], data[1], data[4])
+            })
             resolve()
             // if (currentURL.includes('asura')) asura(currentURL)
             // if (URL.includes('reaperscan')) reaperMang()

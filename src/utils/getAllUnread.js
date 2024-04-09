@@ -16,6 +16,7 @@ async function getUnread(authID, userCat = '%', sortMethod = 'mangaName', sortOr
     const nextLinks = []
     const nextChap = []
     const currentChap = []
+    const currentCat = []
 
     try {
         const userData = await new Promise((resolve, reject) => {
@@ -54,6 +55,7 @@ async function getUnread(authID, userCat = '%', sortMethod = 'mangaName', sortOr
                     names.push(name)
                     nextLinks.push(chaps[i + 1])
                     currentChap.push(row.currentCard)
+                    currentCat.push(row.userCat)
                     nextChap.push(row.nextCard)
                     break
                 }
@@ -61,7 +63,7 @@ async function getUnread(authID, userCat = '%', sortMethod = 'mangaName', sortOr
         }
 
         // console.log(info)
-        return [names, nextLinks, nextChap, currentChap]
+        return [names, nextLinks, nextChap, currentChap, currentCat]
     } catch (error) {
         console.error("Error:", error);
         return [];

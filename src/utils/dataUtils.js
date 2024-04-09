@@ -61,9 +61,20 @@ async function getNextList(currentURL, mangaName, amount = 25) {
 
     for (const chapURL of chaps) {
         var chap = chapURL.split('/')
-        chap = (chap[chap.length-1].replace("-", " "))
+        var chapUrlEnd = chap[chap.length-1]
+        chap = chap[chap.length-1]
+        chap = chap.split('-')
 
-        info.push({"label": chap, "value": chapURL})
+        var check = true
+        while (check) {
+            if (chap[0].includes('chapter')) {
+                check = false
+            } else {
+                chap.shift()
+            }
+        }
+        chap = chap.join(' ')
+        info.push({"label": chap, "value": chapUrlEnd})
     }
 
     const trimmedUnread = info.slice(0,amount)

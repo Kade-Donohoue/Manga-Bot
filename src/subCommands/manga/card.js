@@ -37,7 +37,7 @@ module.exports = class mangaCardSubCommand extends BaseSubcommandExecutor {
                     next = chaps[0]
 
                 }
-                generateCard(name.toString(), latest, current, next, (chaps.length + 1).toString() + " Chapters", updateTime).then(function(data) {
+                generateCard(name.toString(), latest, current, next, (chaps.length).toString() + " Chapters", updateTime).then(function(data) {
                     const attach = new AttachmentBuilder(data, { name: `${name}-card.png`})
                     interaction.editReply({ content: "", files: [attach], ephemeral: true})
                     dataUtils.userInteractTime(authID, name)

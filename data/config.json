@@ -1,4 +1,7 @@
 {
     "globalCommands": false,
-    "updateDelay": 7200000
+    "updateDelay": 7200000,
+    "updateAtStart": true, 
+    "allowManganatoScans": true,
+    "allowReaperScans": false
 }

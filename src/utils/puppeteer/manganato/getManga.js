@@ -1,4 +1,5 @@
 const getIcon = require("./getIcon")
+const config = require('../../../../data/config.json')
 const puppeteer = require("puppeteer-extra")
 const stealthPlugin = require("puppeteer-extra-plugin-stealth")
 puppeteer.use(stealthPlugin())
@@ -24,6 +25,8 @@ const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>
  */
 
 async function getMangaFull(url, icon = true) {
+    if (!config.allowManganatoScans) return -2
+    
     const browser = await puppeteer.launch({headless: "new", devtools: false, ignoreHTTPSErrors: true, //"new"
             args: ['--enable-features=NetworkService', '--no-sandbox', '--disable-setuid-sandbox','--mute-audio']})
     try {
@@ -32,7 +35,7 @@ async function getMangaFull(url, icon = true) {
         page.setRequestInterception(true)
 
         const allowRequests = wildcardMatch(['*manganato*'], {separator: false})
-        const blockRequests = wildcardMatch(['*.css*', '*.js*', '*facebook*', '*bidgear*'], {separator: false})
+        const blockRequests = wildcardMatch(['*.css*', '*.js*', '*facebook*', '*fbcdn.net*', '*bidgear*'], {separator: false})
         page.on('request', (request) => {
             const u = request.url()
             if (!allowRequests(u)) {
@@ -104,7 +107,8 @@ async function getMangaFull(url, icon = true) {
 
         return [chapterList, mangaName, currentTitle, chapNext, latestChapter]
         
-    } catch {
+    } catch (err) {
+        // console.warn(err)
         await browser.close()
         return -1
     }

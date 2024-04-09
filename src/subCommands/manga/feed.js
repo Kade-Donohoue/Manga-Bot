@@ -2,7 +2,8 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder, Compone
 const BaseSubcommandExecutor = require("../../../src/utils/BaseSubCommandExecutor")
 const { generateCard }  = require('../../../src/utils/cardGenerator')
 const { getUnread }  = require('../../../src/utils/getAllUnread')
-const getManga = require("../../utils/puppeteer/manganato/getManga")
+const manganato = require("../../utils/puppeteer/manganato/getManga")
+const reaper = require("../../utils/puppeteer/reaper/getManga")
 const { updateCategory }  = require('../../utils/updateManga')
 const dataUtils = require('../../utils/dataUtils')
 
@@ -73,14 +74,12 @@ module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
         const sortMethod = interaction.options.getString('sort-method') ?? 'interactTime'
         const sortOrd = interaction.options.getString('sort-order') ?? 'ASC'
 
-        getUnread(authID, userCat, sortMethod, sortOrd).then(async ([names, nextLinks, nextChap, currentChap]) => {
+        getUnread(authID, userCat, sortMethod, sortOrd).then(async ([names, nextLinks, nextChap, currentChap, currentCat]) => {
             if (names.length == 0) return interaction.reply({ content: "You have no Unread manga!", ephemeral: true })
 
             await interaction.deferReply({ ephemeral: true })
 
-            manageCardHandler(names, nextLinks, nextChap, currentChap, interaction)
-            // await delay(14.5*60*1000)
-            // interaction.editReply({ content: `Interaction Timed out please run </manga feed:${interaction.commandId}> again to continue! `, files: [], components: [], ephemeral: true})
+            manageCardHandler(names, nextLinks, nextChap, currentChap, interaction, currentCat)
         })
     }
 }
@@ -94,7 +93,7 @@ module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
  * @param interaction: interaction to reply to
  * @returns Nothing 
  */
-async function manageCardHandler(names, nexts, nextChaps, currentChaps, interaction) {
+async function manageCardHandler(names, nexts, nextChaps, currentChaps, interaction, userCat) {
     var currentIndex = 0
     var msg = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
     response = await interaction.editReply(msg)
@@ -137,6 +136,7 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
 
         if (interact.customId == 'read') { // repllace buttons with dropdown to select current chap(limited to next 25 chaps)
             const nextList = await dataUtils.getNextList(nexts[currentIndex], names[currentIndex], 25)
+            console.log(nextList)
             mangeReadSelection.setOptions(nextList)
             const row = new ActionRowBuilder()
                 .addComponents(mangeReadSelection)
@@ -151,13 +151,33 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
         }
 
         if (interact.customId == 'select') { // updates current chap and goes to the next card
+            var urlBase = nexts[currentIndex].split('/')
+            urlBase.pop()
+            urlBase = urlBase.join('/')
             currentIndex+=1
             if (currentIndex < names.length) {
                 await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
             } else await interact.editReply({ content: "You are all caught up!!!", files: [], components: []})
 
-            getManga.getMangaFull(interact.values[0], false).then(async function(updateData) {
-                if (updateData != -1) getManga.setUpChaps(updateData[0],updateData[1],updateData[2],updateData[3],updateData[4], interaction.user.id, interact.values[0])
+            const URL = urlBase+'/'+interact.values[0]
+            // console.log(URL)
+            if (URL.includes('chapmang')) return manganato.getMangaFull(URL).then(function(data) {
+                if (data == -1) {
+                    interact.editReply({content: 'An internal system error has occured. Please try again or contact the admin'})
+                } else if (data == -2) {
+                    interaction.followUp({content: 'ChapManganato has been disabled. If you think this is a mistake please contact the admin'})
+                } else {
+                    manganato.setUpChaps(data[0],data[1],data[2],data[3],data[4], interaction.user.id, URL, userCat[currentIndex-1])
+                }
+            })
+            if (URL.includes('reaperscan')) return reaper.getMangaFull(URL).then(function(data) {
+                if (data == -1) {
+                    interact.editReply({content: 'An internal system error has occured. Please try again or contact the admin'})
+                } else if (data == -2) {
+                    interaction.followUp({content: 'Reaper Scans has been disabled. If you think this is a mistake please contact the admin', ephemeral: true})
+                } else {
+                    reaper.setUpChaps(data[0],data[1],data[2],data[3],data[4], interaction.user.id, URL, userCat[currentIndex-1])
+                }
             })
         }
 
@@ -192,7 +212,7 @@ async function feedCardMaker(name, nextURL, currentText, nextText) {
 
     const mangaRow = await dataUtils.getMangaRow(name)
 
-    const cardData = await generateCard(name.toString(), mangaRow.latestCard, currentText, nextText, (mangaRow.list.split(",").length + 1).toString() + " Chapters", mangaRow.updateTime)
+    const cardData = await generateCard(name.toString(), mangaRow.latestCard, currentText, nextText, (mangaRow.list.split(",").length).toString() + " Chapters", mangaRow.updateTime)
     const attach = new AttachmentBuilder(cardData, { name: `${name}-card.png`})
 
     linkButton.setURL(String(nextURL))

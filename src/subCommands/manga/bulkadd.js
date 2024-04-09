@@ -1,5 +1,6 @@
 const BaseSubcommandExecutor = require("../../utils/BaseSubCommandExecutor")
-const getManga = require("../../utils/puppeteer/manganato/getManga")
+const manganato = require("../../utils/puppeteer/manganato/getManga")
+const reaper = require("../../utils/puppeteer/reaper/getManga")
 const {hyperlink, hideLinkEmbed} = require('discord.js')
 
 module.exports = class mangaBulkAddSubCommand extends BaseSubcommandExecutor {
@@ -12,24 +13,33 @@ module.exports = class mangaBulkAddSubCommand extends BaseSubcommandExecutor {
         const URLS = interaction.options.get('manga_url').value.split(",")
         const userCat = interaction.options.getString('category') ?? 'unsorted'
         await interaction.reply({ content : 'This will take a minute please wait...', ephemeral: true  })
-        loop(0)
 
-        function loop(i) {
-            var URL = URLS[i]
-            
-            if (!URL.includes("http")) return
-            if (URL.includes('chapmang')) getManga.getMangaFull(URL).then(function(data) {
-                if (data == -1) interaction.followUp({content: `Invalid URL: \n${hideLinkEmbed(hyperlink(URL))}`, ephemeral: true})
-                if (data != -1) getManga.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)
-                if (i < URLS.length -1) {
-                    loop(i+1)
-                } else {
-                    interaction.editReply("Done!")
+        for (let i = 0; i < URLS.length; i++) {
+            const URL = URLS[i]
+            await new Promise(async (resolve, reject) => {
+                console.log(URL)
+                
+                if (!URL.includes("http")) reject()
+                else if (URL.includes('chapmang')) {
+                    const data = await manganato.getMangaFull(URL)
+                    if (data == -1) interaction.followUp({content: 'An internal system error has occured. Please try again or contact the admin', ephemeral: true})
+                    else if (data == -2) interaction.editReply({content: 'ChapManganato has been disabled. If you think this is a mistake please contact the admin', ephemeral: true})
+                    else manganato.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)
+                    resolve()
                 }
+                else if (URL.includes('reaperscans')) {
+                    const data = await reaper.getMangaFull(URL)
+                    if (data == -1) interaction.followUp({content: 'An internal system error has occured. Please try again or contact the admin', ephemeral: true})
+                    else if (data == -2) interaction.followUp({content: 'Reaper Scans has been disabled. If you think this is a mistake please contact the admin', ephemeral: true})
+                    else reaper.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)   
+                    resolve()
+                }
+            }).catch ( () => {
+                interaction.followUp({content: `Invalid URL: \n${hideLinkEmbed(hyperlink(URL))}`, ephemeral: true})
             })
-            
         }    
 
-        
+        interaction.editReply("Done!")
+  
     }
 }
