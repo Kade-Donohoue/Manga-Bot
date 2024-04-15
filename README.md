@@ -18,19 +18,26 @@ Discord bot that uses Puppeteer to scrape web pages.
 # Config
 
 ## token.json
-- code: Token of bot. Found under bot section of discord developer portal. You may have to reset token to get it
-- public: Public Key of the discord bot. Can be found under general information of Discord developer portal
-- appID: Application ID of the discord bot. Can be found under general information of Discord developer portal
+- code: Token of bot. Found under the bot section of the discord developer portal. You may have to reset the token to get it
+- public: Public Key of the discord bot. This can be found under general information of Discord developer portal
+- appID: Application ID of the discord bot. This can be found under general information of Discord developer portal
 - guildID: ID of your test discord server
 
 ## config.json
-- globalCommands: Have commands as global (anywhere the bot is including DMs) or just the provided guildID
-- updateDelay: Delay in milliseconds between updating all manga stored in DB
-- updateAtStart: whether or not all manga should be updated when started
-- allowManganatoScans: Enable or disable the ability to add or update Manganato
-- allowReaperScans: Enable or disable the ability to add or update Reaper Scans
+- globalCommands: (default: false) Have commands as global (anywhere the bot is including DMs) or just the provided guildID
+- updateDelay: (default: 7200000) Delay in milliseconds between updating all manga stored in DB
+- updateAtStart: (default: true) whether or not all manga should be updated when started
+- allowManganatoScans: (default: true) Enable or disable the ability to add or update Manganato
+- allowReaperScans: (default: false) Enable or disable the ability to add or update Reaper Scans
+- forceUpdateCurrentText: (default: false) Enables or disables force update of all current card text on the bot start 
 
 # **Change Logs**
+
+## Change Log v0.1.14
+- commented out console log-in feed command that was outputting mark as read key, values
+- refreshAll now has the option to also update the next card text allowing it to be accurate when the user is already at the latest
+- added option in config to force update current card text in case it got messed up
+- Read Me now also shows the default config.json values
 
 ## Change Log v0.1.13
 - feed command no longer sets the category of manga to unsorted when updating the chapter
@@ -39,7 +46,7 @@ Discord bot that uses Puppeteer to scrape web pages.
 - fixed issue where cards would display 1 extra chapter then there was
 - removed commented-out code in generateUserStatCard that served no purpose
 - changed how getNextList created the labels so it works with both Reaper and Manganato
-- changed getNextList value to just be last part of URL instead of full url. This reduces chance af 100 char limit being reached for the value
+- changed getNextList value to just be last part of URL instead of full url. This reduces the chance of the 100-char limit being reached for the value
 - fixed some spelling throughout changelogs
 - feed command will now send the user an error message when saving the updated chapter fails
 - bulkadd loop has been rebuilt to not be recursive

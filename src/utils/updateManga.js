@@ -20,6 +20,12 @@ const data = new sqlite3.Database('data/manga.db',sqlite3.OPEN_READWRITE,(err)=>
 })
 
 
+/**
+ * Saves provided manga to the manga database
+ * @param {Array} chaps: List of chapter URLS 
+ * @param {String} name: Name of the manga
+ * @param {String} latestTitle: Texts for the latest chapter on the card
+ */
 async function updateChaps(chaps, name, latestTitle) {
     const currentTime = new Date().toLocaleDateString("en-US", {year: "numeric", month: "numeric", day: "numeric", timeZone: "America/Los_Angeles", timeZoneName: "short", hour: "numeric", minute: "numeric", hour12: true })
     sql = `SELECT * FROM mangaData WHERE mangaName = ?`
@@ -75,26 +81,89 @@ async function refreshSelect(mangaName, full = true) {
             })
             resolve()
             // if (currentURL.includes('asura')) asura(currentURL)
-            // if (URL.includes('reaperscan')) reaperMang()
         })
     })
 }
 
-function refreshAll() {
-    sql = `SELECT mangaName FROM mangaData`;
-    data.all(sql,[], async (err, rows)=> {
+/**
+ * Force updates all current card text in case something is wrong. 
+ */
+async function updateAllCurrentText() {
+    sql = `SELECT current FROM userData`
+    data.all(sql, [], (err, rows) => {
         if (err) return console.error(err.message)
         if (!rows) return
-        const names = rows.map(row => row.mangaName)
 
-        for (let i=0; i<names.length; i++) {
-                await refreshSelect(names[i], false)
+        for (const row of rows) {
+            var currentText = row.current.split('/')
+            currentText = currentText[currentText.length-1].replace("-", " ")
+            console.log(currentText)
+
+            sql = 'UPDATE userData SET currentCard = ? WHERE current = ?'
+            data.run(sql, [currentText, row.current],(err)=>{
+                if (err) return console.error(err.message);
+            })
         }
     })
+}
+
+/**
+ * Updates all tracked manga's data
+ * @param {Boolean} updateCardText: wether or not next chapter text should be updated for all manga
+ */
+async function refreshAll(updateCardText = true) {
+    sql = `SELECT mangaName FROM mangaData`;
+    await new Promise((resolve, reject) => {
+        data.all(sql,[], async (err, rows)=> {
+            if (err) return console.error(err.message)
+            if (!rows) return
+            const names = rows.map(row => row.mangaName)
+
+            for (let i=0; i<names.length; i++) {
+                    await refreshSelect(names[i], false)
+            }
+            resolve()
+        })
+    })
+
+    if (updateCardText) {
+        sql = `SELECT mangaName, list FROM mangaData`
+        data.all(sql, [], async (err, rows) => {
+            if (err) return console.error(err.message)
+            if (!rows) return
+            const info = {}
+            for (const row of rows) {
+                info[row.mangaName] = row.list
+            }
+
+            sql = `SELECT mangaName, current FROM userData`
+            data.all(sql, [], async (err, rows) => {
+                if (err) return console.error(err.message)
+                if (!rows) return
+                // console.log(rows)
+                for (const row of rows) {
+                    const currentList = info[row.mangaName].split(',')
+                    var currentIndex = currentList.indexOf(row.current)
+                    if (currentIndex+1 >= currentList.length) {
+                        currentIndex -= 1
+                    }
+                    const nextURL = currentList[currentIndex+1]
+                    var nextCardText = nextURL.split('/')
+                    nextCardText = nextCardText[nextCardText.length-1].replace("-", " ")
+                    // console.log(row.mangaName + ": " + nextCardText + '\n\n\n')
+                    sql = `UPDATE userData SET nextCard = ?  WHERE mangaName = ? AND current = ?`
+                    data.run(sql,[nextCardText, row.mangaName, row.current],(err)=>{
+                        if (err) return console.error(err.message);
+                    })
+                }
+            })
+        })
+    }
 }
 
 module.exports = {
     refreshSelect,
     refreshAll,
     updateCategory,
+    updateAllCurrentText,
 }

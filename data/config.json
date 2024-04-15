@@ -3,5 +3,6 @@
     "updateDelay": 7200000,
     "updateAtStart": true, 
     "allowManganatoScans": true,
-    "allowReaperScans": false
+    "allowReaperScans": false,
+    "forceUpdateCurrentText": false
 }

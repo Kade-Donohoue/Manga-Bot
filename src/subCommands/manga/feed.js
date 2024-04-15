@@ -136,7 +136,7 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
 
         if (interact.customId == 'read') { // repllace buttons with dropdown to select current chap(limited to next 25 chaps)
             const nextList = await dataUtils.getNextList(nexts[currentIndex], names[currentIndex], 25)
-            console.log(nextList)
+            // console.log(nextList)
             mangeReadSelection.setOptions(nextList)
             const row = new ActionRowBuilder()
                 .addComponents(mangeReadSelection)
