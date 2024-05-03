@@ -20,7 +20,7 @@ async function userInteractTime(userID, mangaName) {
 /**
  * gets row from provided name from manga Data
  * @param {String} mangaName 
- * @returns disctionary that has the keys mangaName(same as provided name), list(list of chapter URLS), newest(latest chapter url), latestCard(Text for latest on card), updateTime(time for card that is was last updated)
+ * @returns dictionary that has the keys mangaName(same as provided name), list(list of chapter URLS), newest(latest chapter url), latestCard(Text for latest on card), updateTime(time for card that is was last updated)
  */
 async function getMangaRow(mangaName) {
     sql = `SELECT * FROM mangaData WHERE mangaName = ?`

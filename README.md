@@ -15,6 +15,10 @@ Discord bot that uses Puppeteer to scrape web pages.
 4. Create a `manga.db` file in the data folder
 5. Use `node .` in the repo folder to start the bot
 
+## To-Do List
+- Add activity support
+- support more websites
+
 # Config
 
 ## token.json
@@ -32,6 +36,9 @@ Discord bot that uses Puppeteer to scrape web pages.
 - forceUpdateCurrentText: (default: false) Enables or disables force update of all current card text on the bot start 
 
 # **Change Logs**
+
+## Change Log v0.1.14
+- added a counter for where you are at in the feed (ex: 4 / 9 Unread Manga)
 
 ## Change Log v0.1.14
 - commented out console log-in feed command that was outputting mark as read key, values

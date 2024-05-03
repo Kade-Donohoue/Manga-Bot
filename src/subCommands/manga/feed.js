@@ -96,6 +96,7 @@ module.exports = class mangaFeedSubCommand extends BaseSubcommandExecutor {
 async function manageCardHandler(names, nexts, nextChaps, currentChaps, interaction, userCat) {
     var currentIndex = 0
     var msg = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
+    msg.content = `${currentIndex+1} / ${names.length} Unread Manga`
     response = await interaction.editReply(msg)
 
 
@@ -117,7 +118,9 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
             dataUtils.userInteractTime(interaction.user.id, names[currentIndex])
             currentIndex += 1
             if (currentIndex < names.length) {
-                await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
+                const cardMessage = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
+                cardMessage.content = `${currentIndex+1} / ${names.length} Unread Manga`
+                await interact.editReply(cardMessage)
             } else  {
                 await interact.editReply({ content: "You are all caught up!!!", files: [], components: []})
             }
@@ -126,7 +129,9 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
         if (interact.customId == 'prev' ) { //updates card to next card 
             currentIndex += -1
             if (currentIndex >= 0) {
-                await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
+                const cardMessage = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
+                cardMessage.content = `${currentIndex+1} / ${names.length} Unread Manga`
+                await interact.editReply(cardMessage)
                 // dataUtils.userInteractTime(interaction.user.id, names[currentIndex])
             } else  {
                 currentIndex = 0
@@ -147,7 +152,7 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
 
         if (interact.customId == 'backPrev') { // returns buttons
             const cardMessage = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
-            await interact.editReply({ components: cardMessage.components })
+            await interact.editReply({ content: `${currentIndex+1} / ${names.length} Unread Manga`, components: cardMessage.components })
         }
 
         if (interact.customId == 'select') { // updates current chap and goes to the next card
@@ -156,7 +161,9 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
             urlBase = urlBase.join('/')
             currentIndex+=1
             if (currentIndex < names.length) {
-                await interact.editReply(await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex]))
+                const cardMessage = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
+                cardMessage.content = `${currentIndex+1} / ${names.length} Unread Manga`
+                await interact.editReply(cardMessage)
             } else await interact.editReply({ content: "You are all caught up!!!", files: [], components: []})
 
             const URL = urlBase+'/'+interact.values[0]
@@ -201,7 +208,7 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
 }
 
 /**
-     * Provides dictionary for discord message contioning both a card and its buttons
+     * Provides dictionary for discord message containing both a card and its buttons
      * @param name: Name of the Manga
      * @param nextURL: URL of the next chapter
      * @param currentText: Text to put as current chapter on card
