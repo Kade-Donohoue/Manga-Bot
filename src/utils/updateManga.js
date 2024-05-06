@@ -6,6 +6,7 @@ const fs = require('fs')
 const wildcardMatch = require('wildcard-match');
 const manganato = require("./puppeteer/manganato/getManga.js")
 const reaper = require("./puppeteer/reaper/getManga.js")
+const fakeReaper = require("./puppeteer/fakeReaper/getManga")
 
 const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker')
 const { request } = require("http")
@@ -79,6 +80,11 @@ async function refreshSelect(mangaName, full = true) {
                 if (data == -2) return console.warn('Reaperscans was disabled by config but the database contains reaperscans links!!')
                 updateChaps(data[0], data[1], data[4])
             })
+            if (currentURL.includes('reaper-scan')) await fakeReaper.getMangaFull(currentURL, full).then((data) => {
+                if (data == -1) return
+                if (data == -2) return console.warn('Reaper-scans(fake) was disabled by config but the database contains reaper-scans links!!')
+                updateChaps(data[0], data[1], data[4])
+            })
             resolve()
             // if (currentURL.includes('asura')) asura(currentURL)
         })
@@ -147,10 +153,13 @@ async function refreshAll(updateCardText = true) {
                     if (currentIndex+1 >= currentList.length) {
                         currentIndex -= 1
                     }
+                    
                     const nextURL = currentList[currentIndex+1]
-                    var nextCardText = nextURL.split('/')
-                    nextCardText = nextCardText[nextCardText.length-1].replace("-", " ")
-                    // console.log(row.mangaName + ": " + nextCardText + '\n\n\n')
+                    console.log(currentIndex)
+                    var nextCardText = nextURL.slice(nextURL.indexOf('chapter'))
+                    nextCardText = nextCardText.replace('-', ' ')
+                    nextCardText = nextCardText.replace('/', '')
+
                     sql = `UPDATE userData SET nextCard = ?  WHERE mangaName = ? AND current = ?`
                     data.run(sql,[nextCardText, row.mangaName, row.current],(err)=>{
                         if (err) return console.error(err.message);

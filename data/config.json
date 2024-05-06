@@ -4,5 +4,6 @@
     "updateAtStart": true, 
     "allowManganatoScans": true,
     "allowReaperScans": false,
+    "allowReaperScansFake": true,
     "forceUpdateCurrentText": false
 }

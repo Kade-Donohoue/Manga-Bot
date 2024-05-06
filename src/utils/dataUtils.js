@@ -59,22 +59,45 @@ async function getNextList(currentURL, mangaName, amount = 25) {
     chaps = chaps.slice(chaps.indexOf(currentURL), chaps.length)
     // console.log(currentURL)
 
-    for (const chapURL of chaps) {
-        var chap = chapURL.split('/')
-        var chapUrlEnd = chap[chap.length-1]
-        chap = chap[chap.length-1]
-        chap = chap.split('-')
+    if (currentURL.includes('reaper-scan')) {
+        for (var chapURL of chaps) {
+            var chap = chapURL.split('/')
+            chap.pop()
+            chap = chap[chap.length-1]
+            chap = chap.split('-')
 
-        var check = true
-        while (check) {
-            if (chap[0].includes('chapter')) {
-                check = false
-            } else {
-                chap.shift()
+            // console.log(chap)
+            var check = true
+            while (check) {
+                if (chap[0].includes('chapter')) {
+                    check = false
+                } else {
+                    chap.shift()
+                }
             }
+            chap = chap.join(' ')
+            console.log(chap)
+            info.push({"label": chap, "value": chap.replace(' ', '-')})
         }
-        chap = chap.join(' ')
-        info.push({"label": chap, "value": chapUrlEnd})
+    } else {
+
+        for (const chapURL of chaps) {
+            var chap = chapURL.split('/')
+            var chapUrlEnd = chap[chap.length-1]
+            chap = chap[chap.length-1]
+            chap = chap.split('-')
+
+            var check = true
+            while (check) {
+                if (chap[0].includes('chapter')) {
+                    check = false
+                } else {
+                    chap.shift()
+                }
+            }
+            chap = chap.join(' ')
+            info.push({"label": chap, "value": chapUrlEnd})
+        }
     }
 
     const trimmedUnread = info.slice(0,amount)

@@ -4,6 +4,7 @@ const { generateCard }  = require('../../../src/utils/cardGenerator')
 const { getUnread }  = require('../../../src/utils/getAllUnread')
 const manganato = require("../../utils/puppeteer/manganato/getManga")
 const reaper = require("../../utils/puppeteer/reaper/getManga")
+const fakeReaper = require("../../utils/puppeteer/fakeReaper/getManga")
 const { updateCategory }  = require('../../utils/updateManga')
 const dataUtils = require('../../utils/dataUtils')
 
@@ -156,9 +157,11 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
         }
 
         if (interact.customId == 'select') { // updates current chap and goes to the next card
-            var urlBase = nexts[currentIndex].split('/')
-            urlBase.pop()
-            urlBase = urlBase.join('/')
+
+            var urlBase = nexts[currentIndex].split('chapter')
+            urlBase = urlBase[0]
+            console.log(urlBase)
+
             currentIndex+=1
             if (currentIndex < names.length) {
                 const cardMessage = await feedCardMaker(names[currentIndex], nexts[currentIndex], currentChaps[currentIndex], nextChaps[currentIndex])
@@ -166,9 +169,9 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
                 await interact.editReply(cardMessage)
             } else await interact.editReply({ content: "You are all caught up!!!", files: [], components: []})
 
-            const URL = urlBase+'/'+interact.values[0]
-            // console.log(URL)
-            if (URL.includes('chapmang')) return manganato.getMangaFull(URL).then(function(data) {
+            const URL = urlBase+interact.values[0]
+            console.log(URL)
+            if (urlBase.includes('chapmang')) return manganato.getMangaFull(URL, false).then(function(data) {
                 if (data == -1) {
                     interact.editReply({content: 'An internal system error has occured. Please try again or contact the admin'})
                 } else if (data == -2) {
@@ -177,15 +180,25 @@ async function manageCardHandler(names, nexts, nextChaps, currentChaps, interact
                     manganato.setUpChaps(data[0],data[1],data[2],data[3],data[4], interaction.user.id, URL, userCat[currentIndex-1])
                 }
             })
-            if (URL.includes('reaperscan')) return reaper.getMangaFull(URL).then(function(data) {
+            if (urlBase.includes('reaperscan')) return reaper.getMangaFull(URL, false).then(function(data) {
                 if (data == -1) {
-                    interact.editReply({content: 'An internal system error has occured. Please try again or contact the admin'})
+                    interact.editReply({content: 'An internal system error has occurred. Please try again or contact the admin'})
                 } else if (data == -2) {
                     interaction.followUp({content: 'Reaper Scans has been disabled. If you think this is a mistake please contact the admin', ephemeral: true})
                 } else {
                     reaper.setUpChaps(data[0],data[1],data[2],data[3],data[4], interaction.user.id, URL, userCat[currentIndex-1])
                 }
             })
+            if (urlBase.includes('reaper-scan')) return fakeReaper.getMangaFull(URL+'/', false).then(function(data) {
+                    if (data == -1) {
+                        interact.editReply({content: 'An internal system error has occurred. Please try again or contact the admin'})
+                    } else if (data == -2) {
+                        interaction.followUp({content: 'Reaper-Scans(fake) has been disabled. If you think this is a mistake please contact the admin', ephemeral: true})
+                    } else {
+                        fakeReaper.setUpChaps(data[0],data[1],data[2],data[3],data[4], interaction.user.id, URL+'/', userCat[currentIndex-1])
+                    }
+                })
+            interact.followUp({ content: 'An internal system error has occurred. Please try again or contact the admin', ephemeral: true })
         }
 
         if (interact.customId == 'setCat') { // brings up buttons to allow user to change category

@@ -1,6 +1,7 @@
 const BaseSubcommandExecutor = require("../../utils/BaseSubCommandExecutor")
 const manganato = require("../../utils/puppeteer/manganato/getManga")
 const reaper = require("../../utils/puppeteer/reaper/getManga")
+const fakeReaper = require("../../utils/puppeteer/fakeReaper/getManga")
 const {hyperlink, hideLinkEmbed} = require('discord.js')
 
 module.exports = class mangaBulkAddSubCommand extends BaseSubcommandExecutor {
@@ -22,18 +23,24 @@ module.exports = class mangaBulkAddSubCommand extends BaseSubcommandExecutor {
                 if (!URL.includes("http")) reject()
                 else if (URL.includes('chapmang')) {
                     const data = await manganato.getMangaFull(URL)
-                    if (data == -1) interaction.followUp({content: 'An internal system error has occured. Please try again or contact the admin', ephemeral: true})
-                    else if (data == -2) interaction.editReply({content: 'ChapManganato has been disabled. If you think this is a mistake please contact the admin', ephemeral: true})
+                    if (data == -1) interaction.followUp({content: `An internal system error has occurred. Please try again or contact the admin!\n${URL}`, ephemeral: true})
+                    else if (data == -2) interaction.followUp({content: 'ChapManganato has been disabled. If you think this is a mistake please contact the admin!\n${URL}', ephemeral: true})
                     else manganato.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)
                     resolve()
                 }
                 else if (URL.includes('reaperscans')) {
                     const data = await reaper.getMangaFull(URL)
-                    if (data == -1) interaction.followUp({content: 'An internal system error has occured. Please try again or contact the admin', ephemeral: true})
-                    else if (data == -2) interaction.followUp({content: 'Reaper Scans has been disabled. If you think this is a mistake please contact the admin', ephemeral: true})
+                    if (data == -1) interaction.followUp({content: 'An internal system error has occurred. Please try again or contact the admin!\n${URL}', ephemeral: true})
+                    else if (data == -2) interaction.followUp({content: 'Reaper Scans has been disabled. If you think this is a mistake please contact the admin!\n${URL}', ephemeral: true})
                     else reaper.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)   
                     resolve()
-                }
+                } else if (URL.includes('reaper-scan')) {
+                    const data = await fakeReaper.getMangaFull(URL)
+                    if (data == -1) interaction.followUp({content: 'An internal system error has occurred. Please try again or contact the admin!\n${URL}', ephemeral: true})
+                    else if (data == -2) interaction.followUp({content: 'Reaper-Scans(fake) has been disabled. If you think this is a mistake please contact the admin!\n${URL}', ephemeral: true})
+                    else fakeReaper.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)   
+                    resolve()
+                } else reject()
             }).catch ( () => {
                 interaction.followUp({content: `Invalid URL: \n${hideLinkEmbed(hyperlink(URL))}`, ephemeral: true})
             })

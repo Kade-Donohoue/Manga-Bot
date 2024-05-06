@@ -1,6 +1,7 @@
 const BaseSubcommandExecutor = require("../../utils/BaseSubCommandExecutor")
 const manganato = require("../../utils/puppeteer/manganato/getManga")
 const reaper = require("../../utils/puppeteer/reaper/getManga")
+const fakeReaper = require("../../utils/puppeteer/fakeReaper/getManga")
 
 module.exports = class mangaAddSubCommand extends BaseSubcommandExecutor {
     constructor(baseCommand, group) {
@@ -31,6 +32,16 @@ module.exports = class mangaAddSubCommand extends BaseSubcommandExecutor {
                 interaction.editReply({content: 'Reaper Scans has been disabled. If you think this is a mistake please contact the admin'})
             } else {
                 reaper.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)
+                interaction.editReply({content: "Added to your list"})
+            }
+        })
+        if (URL.includes('reaper-scan')) return fakeReaper.getMangaFull(URL).then(function(data) {
+            if (data == -1) { 
+                interaction.editReply({content: 'An internal system error has occured. Please try again or contact the admin'})
+            } else if (data == -2) {
+                interaction.editReply({content: 'Reaper-Scans(fake) has been disabled. If you think this is a mistake please contact the admin'})
+            } else {
+                fakeReaper.setUpChaps(data[0],data[1],data[2],data[3],data[4], authID, URL, userCat)
                 interaction.editReply({content: "Added to your list"})
             }
         })

@@ -55,11 +55,6 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
         .addSubcommand((subcommand) => subcommand 
             .setName('add')
             .setDescription('allows you to add selected manga to your list (WIP)')
-            .addStringOption((option) => option
-                .setName('manga_url')
-                .setDescription('URL for the Manga')
-                .setRequired(true)
-            )
             .addStringOption((option) => option 
                 .setName('category')
                 .setDescription('Category you want Manga in')
@@ -74,15 +69,15 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
                     { name: 'Other', value: 'other' }
                 )
             )
+            .addStringOption((option) => option
+                .setName('manga_url')
+                .setDescription('URL for the Manga')
+                .setRequired(true)
+            )
         )
         .addSubcommand((subcommand) => subcommand 
             .setName('bulkadd')
             .setDescription('allows you to add selected mangas to your list (WIP)')
-            .addStringOption((option) => option
-                .setName('manga_url')
-                .setDescription('URL for the Manga seperated by command and no spaces. EX: link1,link2,link3...')
-                .setRequired(true)
-            )
             .addStringOption((option) => option 
                 .setName('category')
                 .setDescription('Category you want Manga in')
@@ -96,6 +91,11 @@ module.exports = class MangaSubCommand extends BaseSlashSubCommand {
                     { name: 'In Queue', value: 'inqueue' },
                     { name: 'Other', value: 'other' }
                 )
+                .setRequired(true)
+            )
+            .addStringOption((option) => option
+                .setName('manga_url')
+                .setDescription('URL for the Manga separated by command and no spaces. EX: link1,link2,link3...')
                 .setRequired(true)
             )
         )
